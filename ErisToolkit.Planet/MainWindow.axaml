@@ -1,0 +1,51 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:rxui="http://reactiveui.net"
+        mc:Ignorable="d" Width="800" Height="700"
+		xmlns:app="clr-namespace:ErisToolkit.Planet"
+        x:Class="ErisToolkit.Planet.MainWindow">
+	<!--Nav-->
+	<StackPanel>
+		<Button Command="{Binding OpenStarsystemScreen}" Content="Open Starsystem Screen"/>
+		<rxui:RoutedViewHost Grid.Row="0" Router="{Binding Router}">
+			<rxui:RoutedViewHost.DefaultContent>
+				<Grid ColumnDefinitions="200,440" RowDefinitions="Auto,Auto,Auto,Auto,Auto" Margin="20,30,0,0" x:Name="grid">
+				
+					<Button Click="ClickHandler" Grid.Row="0" Grid.Column="0" Margin="8,10,8,20" Background="#ff08566e">Load .biom</Button>
+					<TextBlock Text="" Grid.Row="0" Grid.Column="1" x:Name="fileName" FontWeight="Bold" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="8,0,8,0" TextWrapping="Wrap"/>
+
+					<Border Grid.Row="1" Grid.Column="0" Background="#ff21262b" CornerRadius="20" Padding="5">
+						<TextBlock Text="Number of biomes" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold" Margin="5"/>
+					</Border>
+
+					<Border Grid.Row="1" Grid.Column="1" Background="#ff121617" CornerRadius="20" Padding="5">
+						<TextBlock Text="" x:Name="numBiomes" VerticalAlignment="Center" Margin="5"/>
+					</Border>
+
+					<!--Biome grids-->
+					<Border Grid.Row="2" Grid.Column="1" Background="#ff121617" CornerRadius="20" Padding="5">
+						<Grid ColumnDefinitions="210,210" RowDefinitions="210,16,210,16" Margin="5,5,5,5" x:Name="grid2">
+							<Image Grid.Row="0" Grid.Column="0" Height="200" Width="200" x:Name="imgBiomGridN"/>
+							<TextBlock Text="Biome Grid North" Grid.Row="1" Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Center" IsVisible="false" x:Name="textBiomGridN"/>
+
+							<Image Grid.Row="0" Grid.Column="1" Height="200" Width="200" x:Name="imgBiomGridS"/>
+							<TextBlock Text="Biome Grid South" Grid.Row="1" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Center" IsVisible="false" x:Name="textBiomGridS"/>
+
+							<Image Grid.Row="2" Grid.Column="0" Height="200" Width="200" x:Name="imgResGridN"/>
+							<TextBlock Text="Resource Grid North" Grid.Row="3" Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Center" IsVisible="false" x:Name="textResGridN"/>
+
+							<Image Grid.Row="2" Grid.Column="1" Height="200" Width="200" x:Name="imgResGridS"/>
+							<TextBlock Text="Resource Grid South" Grid.Row="3" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Center" IsVisible="false" x:Name="textResGridS"/>
+						</Grid>
+					</Border>
+				</Grid>
+			</rxui:RoutedViewHost.DefaultContent>
+			<rxui:RoutedViewHost.ViewLocator>
+				<app:AppViewLocator />
+			</rxui:RoutedViewHost.ViewLocator>
+		</rxui:RoutedViewHost>
+		
+	</StackPanel>
+</Window>

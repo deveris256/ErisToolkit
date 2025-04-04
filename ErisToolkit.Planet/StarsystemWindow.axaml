@@ -1,0 +1,56 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" Width="800" Height="700"
+        x:Class="ErisToolkit.Planet.StarsystemWindow">
+	<StackPanel>
+		<Grid Margin="20,30,0,0">			
+			<ContentControl x:Name="CanvasContainer"
+							ClipToBounds="True">
+				<ContentControl.RenderTransform>
+					<TransformGroup>
+						<ScaleTransform ScaleX="1" ScaleY="1"/>
+						<TranslateTransform X="0" Y="0"/>
+					</TransformGroup>
+				</ContentControl.RenderTransform>
+				
+				<Canvas Background="Black" x:Name="StarmapCanvas"
+        Width="300" Height="300">
+					<ItemsControl ItemsSource="{Binding Stars}">
+						<ItemsControl.ItemsPanel>
+							<ItemsPanelTemplate>
+								<Canvas/>
+							</ItemsPanelTemplate>
+						</ItemsControl.ItemsPanel>
+
+						<ItemsControl.Styles>
+							<Style Selector="ContentPresenter">
+								<Setter Property="Canvas.Left" Value="{Binding X}"/>
+								<Setter Property="Canvas.Top" Value="{Binding Y}"/>
+							</Style>
+						</ItemsControl.Styles>
+
+						<ItemsControl.ItemTemplate>
+							<DataTemplate>
+								<StackPanel>
+									<Ellipse Width="6"
+											 Height="6"
+											 Fill="White"/>
+									<TextBlock Text="{Binding Name}"
+											   FontSize="2"
+											   Foreground="White"/>
+								</StackPanel>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+				</Canvas>
+			</ContentControl>
+
+			<TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding Stars.Count, StringFormat='{}Stars: {0}'}"
+           Foreground="Red" FontSize="16"
+           Canvas.Left="10" Canvas.Top="10"/>
+			
+		</Grid>
+	</StackPanel>
+</Window>
