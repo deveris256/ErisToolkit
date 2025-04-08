@@ -21,7 +21,7 @@
 			<TextBlock/>
 		</DockPanel>
 		
-		<Button Command="{Binding OpenStarsystemScreen}" Content="Open Starsystem Screen"/>
+		<!--<Button Command="{Binding OpenStarsystemScreen}" Content="Open Starsystem Screen"/>-->
 		<rxui:RoutedViewHost Grid.Row="0" Router="{Binding Router}">
 			<rxui:RoutedViewHost.DefaultContent>
 				<Grid ColumnDefinitions="200,440" RowDefinitions="Auto,Auto,Auto,Auto,Auto" Margin="20,30,0,0" x:Name="grid">
