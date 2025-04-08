@@ -2,6 +2,7 @@
 using System.Drawing;
 using Newtonsoft.Json;
 using Mutagen.Bethesda.Starfield;
+using Noggog;
 
 namespace ErisToolkit.Common.GameData;
 
@@ -184,5 +185,101 @@ public class Biom
         }
 
         return bitmap;
+    }
+
+    public bool LoadBiomeImage(System.Drawing.Bitmap bitmap, int biomGridIndex)
+    {
+        UInt32[] biomGrid;
+
+        switch (biomGridIndex)
+        {
+            case 0: biomGrid = biomStruct.BiomeGridN; break;
+            case 1: biomGrid = biomStruct.BiomeGridS; break;
+            default: return false;
+        }
+        if (bitmap.Size.Width != (int)gridSize[0] || bitmap.Size.Height != (int)gridSize[1])
+        {
+            return false;
+        }
+
+        for (int i = 0; i < gridFlatSize; i++)
+        {
+            biomGrid[i] = 0;
+        }
+
+        string json = Properties.Resources.palette1;
+
+        var palette = new Palette(json);
+        Dictionary<int, List<int>> colors = palette.paletteData;
+
+        for (int i = 0; i < gridFlatSize; i++)
+        {
+            int x = i % (int)gridSize[0];
+            int y = i / (int)gridSize[0];
+            Color pixel;
+
+            try { pixel = bitmap.GetPixel(x, y); } catch (Exception e) { return false; }
+
+            foreach (var col in colors)
+            {
+                var colValue = col.Value;
+
+                if (colValue[0] == pixel.R && colValue[1] == pixel.G && colValue[2] == pixel.B)
+                {
+                    biomGrid[i] = biomStruct.BiomeIds[col.Key];
+                    break;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public bool LoadResourceImage(System.Drawing.Bitmap bitmap, int resGridIndex)
+    {
+        byte[] resGrid;
+
+        switch (resGridIndex)
+        {
+            case 0: resGrid = biomStruct.ResrcGridN; break;
+            case 1: resGrid = biomStruct.ResrcGridS; break;
+            default: return false;
+        }
+        if (bitmap.Size.Width != (int)gridSize[0] || bitmap.Size.Height != (int)gridSize[1])
+        {
+            return false;
+        }
+
+        for (int i = 0; i < gridFlatSize; i++)
+        {
+            resGrid[i] = 0;
+        }
+
+        string json = Properties.Resources.palette1;
+
+        var palette = new Palette(json);
+        Dictionary<int, List<int>> colors = palette.paletteData;
+
+        for (int i = 0; i < gridFlatSize; i++)
+        {
+            int x = i % (int)gridSize[0];
+            int y = i / (int)gridSize[0];
+            Color pixel;
+
+            try { pixel = bitmap.GetPixel(x, y); } catch (Exception e) { return false; }
+
+            foreach (var col in colors)
+            {
+                var colValue = col.Value;
+
+                if (colValue[0] == pixel.R && colValue[1] == pixel.G && colValue[2] == pixel.B)
+                {
+                    resGrid[i] = (byte)known_resource_ids[col.Key];
+                    break;
+                }
+            }
+        }
+
+        return true;
     }
 }

@@ -28,6 +28,11 @@ public static class Utils
         Patterns = new[] { "*.biom" }
     };
 
+    public static FilePickerFileType PngFilePicker { get; } = new(".Png file")
+    {
+        Patterns = new[] { "*.png" }
+    };
+
     public static FilePickerFileType PluginFilePicker { get; } = new("Plugin file")
     {
         Patterns = new[] { "*.esp", "*.esm", "*.*" }

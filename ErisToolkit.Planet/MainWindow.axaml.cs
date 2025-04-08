@@ -68,6 +68,8 @@ public class MainWindowViewModel : ReactiveObject, IScreen
 public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 {
     List<Avalonia.Controls.Image> images;
+    List<Avalonia.Controls.Button> buttons;
+    MainWindowViewModel viewModel;
 
     public MainWindow()
     {
@@ -75,10 +77,25 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         AvaloniaXamlLoader.Load(this);
         InitializeComponent();
 
+        DataContext = viewModel;
+
         images = [imgBiomGridN, imgBiomGridS, imgResGridN, imgResGridS];
+        buttons = [BiomGridN, BiomGridS, ResGridN, ResGridS];
     }
 
-    public async void SaveBiom(object sender, RoutedEventArgs args)
+    public async void SelectImageClickHandler(object sender, RoutedEventArgs args)
+    {
+        foreach (var button in buttons)
+        {
+            button.Background = null;
+            button.IsEnabled = true;
+        }
+
+        ((Button)sender).Background = Avalonia.Media.Brushes.Aquamarine;
+        ((Button)sender).IsEnabled = false;
+    }
+
+    public async void SaveBiomFile()
     {
         if (Common.biom == null) return;
 
@@ -99,32 +116,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         }
     }
 
-    public async void SaveBiomImageToDisk(object sender, RoutedEventArgs args)
-    {
-        var topLevel = GetTopLevel(this);
-
-        int index = Common.StringToIndex(((dynamic)sender).Name);
-
-        if (index == -1) return;
-
-        var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
-        {
-            Title = "Save Image To Disk",
-            DefaultExtension = "png",
-            SuggestedFileName = $"{((dynamic)sender).Name}.png"
-        });
-
-        Common.currentEditableIndex = index;
-
-        if (file != null)
-        {
-            var img = Common.GetBitmap();
-
-            if (img != null) { img.Save(file.Path.AbsolutePath); }
-        }
-    }
-
-    public async void ClickHandler(object sender, RoutedEventArgs args)
+    public async void LoadBiomFile()
     {
         var topLevel = GetTopLevel(this);
 
@@ -162,6 +154,104 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
             textBiomGridS.IsVisible = true;
             textResGridN.IsVisible = true;
             textResGridS.IsVisible = true;
+        }
+    }
+
+    public async void SlotSaveImage()
+    {
+        if (Common.biom == null) { return; }
+
+        var topLevel = GetTopLevel(this);
+        Button selButton = null;
+
+        foreach (var button in buttons)
+        {
+            if (button.IsEnabled == false)
+            {
+                selButton = button;
+                break;
+            }
+        }
+
+        if (selButton == null)
+        {
+            return;
+        }
+
+        var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            Title = "Save Image To Disk",
+            DefaultExtension = "png",
+            SuggestedFileName = $"{selButton.Name}.png"
+        });
+
+        int index = Common.StringToIndex(selButton.Name);
+        if (index == -1) return;
+
+        Common.currentEditableIndex = index;
+
+        if (file != null)
+        {
+            var img = Common.GetBitmap();
+
+            if (img != null) { img.Save(file.Path.AbsolutePath); }
+        }
+    }
+
+    public async void SlotReplaceImage()
+    {
+        if (Common.biom == null) { return; }
+
+        var topLevel = GetTopLevel(this);
+        Button selButton = null;
+
+        foreach (var button in buttons)
+        {
+            if (button.IsEnabled == false)
+            {
+                selButton = button;
+                break;
+            }
+        }
+
+        if (selButton == null) { return; }
+
+        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Open .png File",
+            AllowMultiple = false,
+            FileTypeFilter = new[] { Utils.PngFilePicker }
+        });
+
+        int index = Common.StringToIndex(selButton.Name);
+        if (index == -1) return;
+
+        Common.currentEditableIndex = index;
+
+        if (files.Count >= 1)
+        {
+            var img = new System.Drawing.Bitmap(files[0].Path.AbsolutePath);
+
+            switch (index)
+            {
+                case 0:
+                    Common.biom.LoadBiomeImage(img, 0);
+                    imgBiomGridN.Source = Utils.ConvertToAvaloniaBitmap(Common.biom.GetBiomeImage(Common.biom.biomStruct.BiomeGridN));
+                    break;
+                case 1:
+                    Common.biom.LoadBiomeImage(img, 1);
+                    imgBiomGridS.Source = Utils.ConvertToAvaloniaBitmap(Common.biom.GetBiomeImage(Common.biom.biomStruct.BiomeGridS));
+                    break;
+
+                case 2:
+                    Common.biom.LoadResourceImage(img, 0);
+                    imgResGridN.Source = Utils.ConvertToAvaloniaBitmap(Common.biom.GetResourceImage(Common.biom.biomStruct.ResrcGridN));
+                    break;
+                case 3:
+                    Common.biom.LoadResourceImage(img, 1);
+                    imgResGridS.Source = Utils.ConvertToAvaloniaBitmap(Common.biom.GetResourceImage(Common.biom.biomStruct.ResrcGridS));
+                    break;
+            }
         }
     }
 }

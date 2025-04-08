@@ -8,12 +8,24 @@
         x:Class="ErisToolkit.Planet.MainWindow">
 	<!--Nav-->
 	<StackPanel>
+		<DockPanel>
+			<Menu DockPanel.Dock="Top">
+				<MenuItem Header="_File">
+					<MenuItem Header="Open Biom..." Command="{Binding $parent[Window].LoadBiomFile}"/>
+					<MenuItem Header="Save Biom..." Command="{Binding $parent[Window].SaveBiomFile}"/>
+					<Separator/>
+					<MenuItem Header="Save Image of selected slot..." Command="{Binding $parent[Window].SlotSaveImage}"/>
+					<MenuItem Header="Load Image replacing selected slot..." Command="{Binding $parent[Window].SlotReplaceImage}"/>
+				</MenuItem>
+			</Menu>
+			<TextBlock/>
+		</DockPanel>
+		
 		<Button Command="{Binding OpenStarsystemScreen}" Content="Open Starsystem Screen"/>
 		<rxui:RoutedViewHost Grid.Row="0" Router="{Binding Router}">
 			<rxui:RoutedViewHost.DefaultContent>
 				<Grid ColumnDefinitions="200,440" RowDefinitions="Auto,Auto,Auto,Auto,Auto" Margin="20,30,0,0" x:Name="grid">
 					
-					<Button Click="ClickHandler" Grid.Row="0" Grid.Column="0" Margin="8,10,8,20" Background="#ff08566e">Load .biom</Button>
 					<TextBlock Text="" Grid.Row="0" Grid.Column="1" x:Name="fileName" FontWeight="Bold" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="8,0,8,0" TextWrapping="Wrap"/>
 
 					<Border Grid.Row="1" Grid.Column="0" Background="#ff21262b" CornerRadius="20" Padding="5">
@@ -28,7 +40,7 @@
 					<Border Grid.Row="2" Grid.Column="1" Background="#ff121617" CornerRadius="20" Padding="5">
 						<Grid ColumnDefinitions="210,210" RowDefinitions="250,250" Margin="5,5,5,5" x:Name="grid2">
 
-							<Button Grid.Row="0" Grid.Column="0" x:Name="BiomGridN" Click="SaveBiomImageToDisk">
+							<Button Grid.Row="0" Grid.Column="0" x:Name="BiomGridN" Click="SelectImageClickHandler">
 								<Button.Content>
 									<StackPanel>
 										<Image Height="200" Width="200" x:Name="imgBiomGridN"/>
@@ -37,7 +49,7 @@
 								</Button.Content>
 							</Button>
 
-							<Button Grid.Row="0" Grid.Column="1" x:Name="BiomGridS" Click="SaveBiomImageToDisk">
+							<Button Grid.Row="0" Grid.Column="1" x:Name="BiomGridS" Click="SelectImageClickHandler">
 								<Button.Content>
 									<StackPanel>
 										<Image Height="200" Width="200" x:Name="imgBiomGridS"/>
@@ -46,7 +58,7 @@
 								</Button.Content>
 							</Button>
 							
-							<Button Grid.Row="1" Grid.Column="0" x:Name="ResGridN" Click="SaveBiomImageToDisk">
+							<Button Grid.Row="1" Grid.Column="0" x:Name="ResGridN" Click="SelectImageClickHandler">
 								<Button.Content>
 									<StackPanel>
 										<Image Height="200" Width="200" x:Name="imgResGridN"/>
@@ -55,7 +67,7 @@
 								</Button.Content>
 							</Button>
 
-							<Button Grid.Row="1" Grid.Column="1" x:Name="ResGridS" Click="SaveBiomImageToDisk">
+							<Button Grid.Row="1" Grid.Column="1" x:Name="ResGridS" Click="SelectImageClickHandler">
 								<Button.Content>
 									<StackPanel>
 										<Image Height="200" Width="200" x:Name="imgResGridS"/>
@@ -66,8 +78,6 @@
 							
 						</Grid>
 					</Border>
-
-					<Button Click="SaveBiom" Grid.Row="99" Grid.Column="0" Margin="8,10,8,20" Background="#ff08566e">Save</Button>
 				</Grid>
 			</rxui:RoutedViewHost.DefaultContent>
 			<rxui:RoutedViewHost.ViewLocator>
