@@ -26,18 +26,44 @@
 
 					<!--Biome grids-->
 					<Border Grid.Row="2" Grid.Column="1" Background="#ff121617" CornerRadius="20" Padding="5">
-						<Grid ColumnDefinitions="210,210" RowDefinitions="210,16,210,16" Margin="5,5,5,5" x:Name="grid2">
-							<Image Grid.Row="0" Grid.Column="0" Height="200" Width="200" x:Name="imgBiomGridN"/>
-							<TextBlock Text="Biome Grid North" Grid.Row="1" Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Center" IsVisible="false" x:Name="textBiomGridN"/>
+						<Grid ColumnDefinitions="210,210" RowDefinitions="250,250" Margin="5,5,5,5" x:Name="grid2">
 
-							<Image Grid.Row="0" Grid.Column="1" Height="200" Width="200" x:Name="imgBiomGridS"/>
-							<TextBlock Text="Biome Grid South" Grid.Row="1" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Center" IsVisible="false" x:Name="textBiomGridS"/>
+							<Button Grid.Row="0" Grid.Column="0" x:Name="BiomGridN" Click="SaveBiomImageToDisk">
+								<Button.Content>
+									<StackPanel>
+										<Image Height="200" Width="200" x:Name="imgBiomGridN"/>
+										<TextBlock Text="Biome Grid North" VerticalAlignment="Top" HorizontalAlignment="Center" IsVisible="false" x:Name="textBiomGridN"/>
+									</StackPanel>
+								</Button.Content>
+							</Button>
 
-							<Image Grid.Row="2" Grid.Column="0" Height="200" Width="200" x:Name="imgResGridN"/>
-							<TextBlock Text="Resource Grid North" Grid.Row="3" Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Center" IsVisible="false" x:Name="textResGridN"/>
+							<Button Grid.Row="0" Grid.Column="1" x:Name="BiomGridS" Click="SaveBiomImageToDisk">
+								<Button.Content>
+									<StackPanel>
+										<Image Height="200" Width="200" x:Name="imgBiomGridS"/>
+										<TextBlock Text="Biome Grid South" VerticalAlignment="Top" HorizontalAlignment="Center" IsVisible="false" x:Name="textBiomGridS"/>
+									</StackPanel>
+								</Button.Content>
+							</Button>
+							
+							<Button Grid.Row="1" Grid.Column="0" x:Name="ResGridN" Click="SaveBiomImageToDisk">
+								<Button.Content>
+									<StackPanel>
+										<Image Height="200" Width="200" x:Name="imgResGridN"/>
+										<TextBlock Text="Resource Grid North" VerticalAlignment="Top" HorizontalAlignment="Center" IsVisible="false" x:Name="textResGridN"/>
+									</StackPanel>
+								</Button.Content>
+							</Button>
 
-							<Image Grid.Row="2" Grid.Column="1" Height="200" Width="200" x:Name="imgResGridS"/>
-							<TextBlock Text="Resource Grid South" Grid.Row="3" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Center" IsVisible="false" x:Name="textResGridS"/>
+							<Button Grid.Row="1" Grid.Column="1" x:Name="ResGridS" Click="SaveBiomImageToDisk">
+								<Button.Content>
+									<StackPanel>
+										<Image Height="200" Width="200" x:Name="imgResGridS"/>
+										<TextBlock Text="Resource Grid South" VerticalAlignment="Top" HorizontalAlignment="Center" IsVisible="false" x:Name="textResGridS"/>
+									</StackPanel>
+								</Button.Content>
+							</Button>
+							
 						</Grid>
 					</Border>
 

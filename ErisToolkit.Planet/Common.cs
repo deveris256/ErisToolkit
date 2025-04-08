@@ -30,6 +30,18 @@ namespace ErisToolkit.Planet
         public static Biom? biom;
         public static int currentEditableIndex = 0;
 
+        public static int StringToIndex(string str)
+        {
+            switch (str.ToLower())
+            {
+                case "biomgridn": return 0;
+                case "biomgrids": return 1;
+                case "resgridn": return 2;
+                case "resgrids": return 3;
+                default: return -1;
+            }
+        }
+
         // Gets bitmap
         public static System.Drawing.Bitmap? GetBitmap(int index = -1)
         {

@@ -99,6 +99,31 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         }
     }
 
+    public async void SaveBiomImageToDisk(object sender, RoutedEventArgs args)
+    {
+        var topLevel = GetTopLevel(this);
+
+        int index = Common.StringToIndex(((dynamic)sender).Name);
+
+        if (index == -1) return;
+
+        var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            Title = "Save Image To Disk",
+            DefaultExtension = "png",
+            SuggestedFileName = $"{((dynamic)sender).Name}.png"
+        });
+
+        Common.currentEditableIndex = index;
+
+        if (file != null)
+        {
+            var img = Common.GetBitmap();
+
+            if (img != null) { img.Save(file.Path.AbsolutePath); }
+        }
+    }
+
     public async void ClickHandler(object sender, RoutedEventArgs args)
     {
         var topLevel = GetTopLevel(this);
@@ -131,27 +156,6 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                 var img = images[i];
 
                 img.Source = Common.GetImage(i);
-
-                // WIP: Implement canvas at first.
-                /*
-                var menu = new ContextMenu();
-
-                menu.ItemsSource = new MenuItem[]
-                {
-                    new MenuItem
-                    {
-                        Header = $"View in Canvas...",
-                        Command = ReactiveCommand.Create(() =>
-                        {
-                            if (DataContext is MainWindowViewModel vm)
-                            {
-                                Common.currentEditableIndex = i; // TODO: Not working properly
-                                vm.OpenCanvas();
-                            }
-                        })
-                    }
-                };
-                img.ContextMenu = menu;*/
             }
 
             textBiomGridN.IsVisible = true;
