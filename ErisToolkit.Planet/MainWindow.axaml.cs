@@ -15,6 +15,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using Mutagen.Bethesda.Starfield;
 using ErisToolkit.Common.GameData;
+using System.IO;
 
 namespace ErisToolkit.Planet;
 
@@ -67,6 +68,7 @@ public class MainWindowViewModel : ReactiveObject, IScreen
 public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 {
     List<Avalonia.Controls.Image> images;
+
     public MainWindow()
     {
         this.WhenActivated(disposables => { });
@@ -76,9 +78,25 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         images = [imgBiomGridN, imgBiomGridS, imgResGridN, imgResGridS];
     }
 
-    public async void ImageOptionsClickHandler(object sender, RoutedEventArgs args)
+    public async void SaveBiom(object sender, RoutedEventArgs args)
     {
+        if (Common.biom == null) return;
 
+        var topLevel = GetTopLevel(this);
+
+        var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            Title = "Save .Biom File",
+            DefaultExtension = "biom"
+        });
+
+        if (file != null)
+        {
+            await using var stream = await file.OpenWriteAsync();
+            using var writer = new BinaryWriter(stream);
+
+            Common.biom.biomStruct.Write(writer);
+        }
     }
 
     public async void ClickHandler(object sender, RoutedEventArgs args)

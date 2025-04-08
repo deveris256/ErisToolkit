@@ -12,7 +12,7 @@
 		<rxui:RoutedViewHost Grid.Row="0" Router="{Binding Router}">
 			<rxui:RoutedViewHost.DefaultContent>
 				<Grid ColumnDefinitions="200,440" RowDefinitions="Auto,Auto,Auto,Auto,Auto" Margin="20,30,0,0" x:Name="grid">
-				
+					
 					<Button Click="ClickHandler" Grid.Row="0" Grid.Column="0" Margin="8,10,8,20" Background="#ff08566e">Load .biom</Button>
 					<TextBlock Text="" Grid.Row="0" Grid.Column="1" x:Name="fileName" FontWeight="Bold" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="8,0,8,0" TextWrapping="Wrap"/>
 
@@ -40,6 +40,8 @@
 							<TextBlock Text="Resource Grid South" Grid.Row="3" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Center" IsVisible="false" x:Name="textResGridS"/>
 						</Grid>
 					</Border>
+
+					<Button Click="SaveBiom" Grid.Row="99" Grid.Column="0" Margin="8,10,8,20" Background="#ff08566e">Save</Button>
 				</Grid>
 			</rxui:RoutedViewHost.DefaultContent>
 			<rxui:RoutedViewHost.ViewLocator>

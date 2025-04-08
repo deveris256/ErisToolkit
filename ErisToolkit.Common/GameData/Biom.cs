@@ -1,6 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using System.Drawing;
 using Newtonsoft.Json;
+using Mutagen.Bethesda.Starfield;
 
 namespace ErisToolkit.Common.GameData;
 
@@ -45,16 +46,32 @@ public class Biom
         public BiomStruct() { }
 
         public void Write(BinaryWriter writer)
-        { // TODO: Write
+        {
             writer.Write(Magic);
             writer.Write((uint)BiomeIds.Length);
-            foreach (var id in BiomeIds)
-            {
-                writer.Write(id);
-            }
+            foreach (var id in BiomeIds) { writer.Write(id); }
+            writer.Write((uint)2);
 
-            Span<byte> structData = MemoryMarshal.AsBytes(new Span<BiomStruct>(ref this));
-            writer.Write(structData);
+            writer.Write(GridSize[0]);
+            writer.Write(GridSize[1]);
+            writer.Write(GridFlatSize);
+
+            for (int i = 0; i < GridFlatSize; i++) { writer.Write(BiomeGridN[i]); }
+
+            writer.Write(GridFlatSize);
+            for (int i = 0; i < GridFlatSize; i++) { writer.Write(ResrcGridN[i]); }
+
+
+            writer.Write(GridSize[0]);
+            writer.Write(GridSize[1]);
+            writer.Write(GridFlatSize);
+
+            for (int i = 0; i < GridFlatSize; i++) { writer.Write(BiomeGridS[i]); }
+
+            writer.Write(GridFlatSize);
+            for (int i = 0; i < GridFlatSize; i++) { writer.Write(ResrcGridS[i]); }
+
+            writer.Close();
         }
     }
 
