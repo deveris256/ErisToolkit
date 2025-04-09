@@ -16,6 +16,8 @@ using Avalonia.ReactiveUI;
 using Mutagen.Bethesda.Starfield;
 using ErisToolkit.Common.GameData;
 using System.IO;
+using System.Collections.ObjectModel;
+using Reloaded.Memory.Pointers;
 
 namespace ErisToolkit.Planet;
 
@@ -77,10 +79,20 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         AvaloniaXamlLoader.Load(this);
         InitializeComponent();
 
+        Biom.LoadPalette();
+
         DataContext = viewModel;
 
         images = [imgBiomGridN, imgBiomGridS, imgResGridN, imgResGridS];
         buttons = [BiomGridN, BiomGridS, ResGridN, ResGridS];
+
+        BiomesList.ItemsSource = Common.biomesList;
+        ResourcesList.ItemsSource = Common.resourcesList;
+    }
+
+    public void CopyColor(object sender, RoutedEventArgs args)
+    {
+        Clipboard.SetTextAsync($"#{((Button)sender).Background.ToString().Remove(0,3)}");
     }
 
     public async void SelectImageClickHandler(object sender, RoutedEventArgs args)
@@ -154,6 +166,9 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
             textBiomGridS.IsVisible = true;
             textResGridN.IsVisible = true;
             textResGridS.IsVisible = true;
+
+            Common.AddBiomeData(BiomesList);
+            Common.AddResourceData();
         }
     }
 

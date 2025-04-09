@@ -5,6 +5,8 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Newtonsoft.Json;
+using Avalonia.Media;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace ErisToolkit.Common;
 
@@ -105,5 +107,24 @@ public class Palette
         {
             paletteData[i] = [colors[i][0], colors[i][1], colors[i][2]];
         }
+    }
+}
+
+/*
+ * Helper class for Avalonia DataGrid
+ */
+public partial class BiomDataList : ObservableObject
+{
+    public string Id {  get; set; }
+    public string Name { get; set; }
+
+    [ObservableProperty]
+    private IBrush _buttonColor;
+
+    public BiomDataList(string id, string name, Avalonia.Media.SolidColorBrush col)
+    {
+        Id = id;
+        Name = name;
+        ButtonColor = col;
     }
 }

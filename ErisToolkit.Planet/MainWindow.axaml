@@ -3,7 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:rxui="http://reactiveui.net"
-        mc:Ignorable="d" Width="800" Height="700"
+        mc:Ignorable="d" Width="900" Height="700"
 		xmlns:app="clr-namespace:ErisToolkit.Planet"
         x:Class="ErisToolkit.Planet.MainWindow">
 	<!--Nav-->
@@ -24,10 +24,107 @@
 		<!--<Button Command="{Binding OpenStarsystemScreen}" Content="Open Starsystem Screen"/>-->
 		<rxui:RoutedViewHost Grid.Row="0" Router="{Binding Router}">
 			<rxui:RoutedViewHost.DefaultContent>
-				<Grid ColumnDefinitions="200,440" RowDefinitions="Auto,Auto,Auto,Auto,Auto" Margin="20,30,0,0" x:Name="grid">
+				<Grid ColumnDefinitions="350,440" RowDefinitions="Auto,Auto,Auto,Auto,Auto" Margin="20,30,0,0" x:Name="grid">
 					
 					<TextBlock Text="" Grid.Row="0" Grid.Column="1" x:Name="fileName" FontWeight="Bold" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="8,0,8,0" TextWrapping="Wrap"/>
 
+					<Border Grid.Row="2" Grid.Column="0" Background="#ff21262b" CornerRadius="20" Padding="5">
+						<StackPanel>
+
+							<TextBlock Text="Biomes" FontWeight="Bold" FontSize="17" HorizontalAlignment="Center" Padding="0,20,0,0"/>
+							
+							<DataGrid Margin="20" x:Name="BiomesList"
+								AutoGenerateColumns="False" IsReadOnly="True"
+								GridLinesVisibility="All"
+								BorderThickness="1" BorderBrush="Gray">
+
+								<DataGrid.Columns>
+									<DataGridTemplateColumn Header="Color" Width="100">
+										<DataGridTemplateColumn.CellTemplate>
+											<DataTemplate>
+												<StackPanel>
+													<Button Click="CopyColor"
+															HorizontalAlignment="Stretch"
+															VerticalAlignment="Stretch"
+															Background="{Binding ButtonColor, Mode=OneWay}"
+															HorizontalContentAlignment="Center"
+															ToolTip.Tip="{Binding ButtonColor}">Copy Color</Button>
+												</StackPanel>
+											</DataTemplate>
+										</DataGridTemplateColumn.CellTemplate>
+									</DataGridTemplateColumn>
+									
+									<DataGridTemplateColumn Header="ID">
+										<DataGridTemplateColumn.CellTemplate>
+											<DataTemplate>
+												<StackPanel>
+													<TextBlock Text="{Binding Id}" Padding="5"/>
+												</StackPanel>
+											</DataTemplate>
+										</DataGridTemplateColumn.CellTemplate>
+									</DataGridTemplateColumn>
+
+									<DataGridTemplateColumn Header="Name">
+										<DataGridTemplateColumn.CellTemplate>
+											<DataTemplate>
+												<StackPanel>
+													<TextBlock Text="{Binding Name}" Padding="5"/>
+												</StackPanel>
+											</DataTemplate>
+										</DataGridTemplateColumn.CellTemplate>
+									</DataGridTemplateColumn>
+								</DataGrid.Columns>								
+							</DataGrid>
+
+
+							<TextBlock Text="Resources" FontWeight="Bold" FontSize="17" HorizontalAlignment="Center" Padding="0,20,0,0"/>
+
+							<DataGrid Margin="20" x:Name="ResourcesList"
+								AutoGenerateColumns="False" IsReadOnly="True"
+								GridLinesVisibility="All"
+								BorderThickness="1" BorderBrush="Gray">
+
+								<DataGrid.Columns>
+									<DataGridTemplateColumn Header="Color" Width="100">
+										<DataGridTemplateColumn.CellTemplate>
+											<DataTemplate>
+												<StackPanel>
+													<Button Click="CopyColor"
+															HorizontalAlignment="Stretch"
+															VerticalAlignment="Stretch"
+															Background="{Binding ButtonColor, Mode=OneWay}"
+															HorizontalContentAlignment="Center"
+															ToolTip.Tip="{Binding ButtonColor}">Copy Color</Button>
+												</StackPanel>
+											</DataTemplate>
+										</DataGridTemplateColumn.CellTemplate>
+									</DataGridTemplateColumn>
+
+									<DataGridTemplateColumn Header="ID">
+										<DataGridTemplateColumn.CellTemplate>
+											<DataTemplate>
+												<StackPanel>
+													<TextBlock Text="{Binding Id}" Padding="5"/>
+												</StackPanel>
+											</DataTemplate>
+										</DataGridTemplateColumn.CellTemplate>
+									</DataGridTemplateColumn>
+
+									<DataGridTemplateColumn Header="Name">
+										<DataGridTemplateColumn.CellTemplate>
+											<DataTemplate>
+												<StackPanel>
+													<TextBlock Text="{Binding Name}" Padding="5"/>
+												</StackPanel>
+											</DataTemplate>
+										</DataGridTemplateColumn.CellTemplate>
+									</DataGridTemplateColumn>
+								</DataGrid.Columns>
+
+							</DataGrid>
+						</StackPanel>
+					</Border>
+					
 					<Border Grid.Row="1" Grid.Column="0" Background="#ff21262b" CornerRadius="20" Padding="5">
 						<TextBlock Text="Number of biomes" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold" Margin="5"/>
 					</Border>

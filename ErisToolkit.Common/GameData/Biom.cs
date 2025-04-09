@@ -21,9 +21,11 @@ namespace ErisToolkit.Common.GameData;
 
 public class Biom
 {
-    private static int[] known_resource_ids = [8, 88, 0, 80, 1, 81, 2, 82, 3, 83, 4, 84];
-    private static readonly uint[] gridSize = { 0x100, 0x100 };
-    private static readonly uint gridFlatSize = gridSize[0] * gridSize[1];
+    public static Palette palette;
+
+    public static int[] known_resource_ids = [8, 88, 0, 80, 1, 81, 2, 82, 3, 83, 4, 84];
+    public static readonly uint[] gridSize = { 0x100, 0x100 };
+    public static readonly uint gridFlatSize = gridSize[0] * gridSize[1];
 
     public BiomStruct biomStruct;
 
@@ -131,14 +133,15 @@ public class Biom
         }
     }
 
+    public static void LoadPalette()
+    {
+        palette = new Palette(Properties.Resources.palette1);
+    }
+
     public System.Drawing.Bitmap GetBiomeImage(uint[] grid)
     {
         System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap((int)gridSize[0], (int)gridSize[1]);
 
-        string json = Properties.Resources.palette1;
-        Console.WriteLine(json);
-
-        var palette = new Palette(json);
         Dictionary<int, List<int>> colors = palette.paletteData;
 
         for (int i = 0; i < gridFlatSize; i++)
@@ -163,10 +166,6 @@ public class Biom
     {
         System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap((int)gridSize[0], (int)gridSize[1]);
 
-        string json = Properties.Resources.palette1;
-        Console.WriteLine(json);
-
-        var palette = new Palette(json);
         Dictionary<int, List<int>> colors = palette.paletteData;
 
         for (int i = 0; i < gridFlatSize; i++)
@@ -207,9 +206,6 @@ public class Biom
             biomGrid[i] = 0;
         }
 
-        string json = Properties.Resources.palette1;
-
-        var palette = new Palette(json);
         Dictionary<int, List<int>> colors = palette.paletteData;
 
         for (int i = 0; i < gridFlatSize; i++)
@@ -255,9 +251,6 @@ public class Biom
             resGrid[i] = 0;
         }
 
-        string json = Properties.Resources.palette1;
-
-        var palette = new Palette(json);
         Dictionary<int, List<int>> colors = palette.paletteData;
 
         for (int i = 0; i < gridFlatSize; i++)
