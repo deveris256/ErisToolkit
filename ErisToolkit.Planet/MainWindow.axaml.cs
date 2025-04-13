@@ -18,10 +18,13 @@ using ErisToolkit.Common.GameData;
 using System.IO;
 using System.Collections.ObjectModel;
 using Reloaded.Memory.Pointers;
+using CommunityToolkit.Mvvm.ComponentModel;
+using System.ComponentModel;
+using Avalonia.Styling;
 
 namespace ErisToolkit.Planet;
 
-public class MainWindowViewModel : ReactiveObject, IScreen
+public partial class MainWindowViewModel : ReactiveObject, IScreen
 {
     public void OpenCanvas()
     {
@@ -40,19 +43,6 @@ public class MainWindowViewModel : ReactiveObject, IScreen
             if (Common.mod == null)
             {
                 var mainWindow = new MainWindow();
-                var topLevel = TopLevel.GetTopLevel(mainWindow);
-                var files = topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
-                {
-                    Title = "Open Plugin File",
-                    AllowMultiple = false,
-                    FileTypeFilter = new[] { Utils.PluginFilePicker }
-                });
-
-                if (files.Result.Count > 0 && files.Result[0] != null)
-                {
-                    string filePath = Uri.UnescapeDataString(files.Result[0].Path.AbsolutePath);
-                    Common.mod = Utils.LoadMod(filePath);
-                }
             }
 
             if (Router.NavigationStack.Count > 0)
@@ -88,6 +78,26 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 
         BiomesList.ItemsSource = Common.biomesList;
         ResourcesList.ItemsSource = Common.resourcesList;
+    }
+
+    public async void LoadEsmClickHandler()
+    {
+        var topLevel = GetTopLevel(this);
+        var files = topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Open Plugin File",
+            AllowMultiple = false,
+            FileTypeFilter = new[] { Utils.PluginFilePicker }
+        });
+
+        if (files.Result.Count > 0 && files.Result[0] != null)
+        {
+            string filePath = Uri.UnescapeDataString(files.Result[0].Path.AbsolutePath);
+
+            Common.AddModToLoadOrder(Utils.LoadMod(filePath));
+
+            if (Common.mod != null) esmName.Text = $"Loaded {Common.mod.ModKey.FileName}";
+        }
     }
 
     public void CopyColor(object sender, RoutedEventArgs args)
@@ -166,9 +176,6 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
             textBiomGridS.IsVisible = true;
             textResGridN.IsVisible = true;
             textResGridS.IsVisible = true;
-
-            Common.AddBiomeData(BiomesList);
-            Common.AddResourceData();
         }
     }
 

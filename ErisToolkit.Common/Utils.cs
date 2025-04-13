@@ -7,6 +7,7 @@ using Avalonia.Platform.Storage;
 using Newtonsoft.Json;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Mutagen.Bethesda.Plugins;
 
 namespace ErisToolkit.Common;
 
@@ -37,7 +38,7 @@ public static class Utils
 
     public static FilePickerFileType PluginFilePicker { get; } = new("Plugin file")
     {
-        Patterns = new[] { "*.esp", "*.esm", "*.*" }
+        Patterns = new[] { "*.esp", "*.esm" }
     };
 
     /*
@@ -115,15 +116,25 @@ public class Palette
  */
 public partial class BiomDataList : ObservableObject
 {
-    public string Id {  get; set; }
-    public string Name { get; set; }
+    public uint RawID { get; set; }
+
+    [ObservableProperty]
+    private string _iD;
+
+    [ObservableProperty]
+    private string _rawIDString;
+
+    [ObservableProperty]
+    private string _name;
 
     [ObservableProperty]
     private IBrush _buttonColor;
 
-    public BiomDataList(string id, string name, Avalonia.Media.SolidColorBrush col)
+    public BiomDataList(uint id, string name, Avalonia.Media.SolidColorBrush col)
     {
-        Id = id;
+        RawID = id;
+        RawIDString = id.ToString();
+        ID = $"{id:x6}";
         Name = name;
         ButtonColor = col;
     }

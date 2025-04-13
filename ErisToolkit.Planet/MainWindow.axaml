@@ -8,9 +8,10 @@
         x:Class="ErisToolkit.Planet.MainWindow">
 	<!--Nav-->
 	<StackPanel>
-		<DockPanel>
+		<WrapPanel>
 			<Menu DockPanel.Dock="Top">
 				<MenuItem Header="_File">
+					<MenuItem Header="Add mod to load order..." Command="{Binding $parent[Window].LoadEsmClickHandler}"/>
 					<MenuItem Header="Open Biom..." Command="{Binding $parent[Window].LoadBiomFile}"/>
 					<MenuItem Header="Save Biom..." Command="{Binding $parent[Window].SaveBiomFile}"/>
 					<Separator/>
@@ -18,164 +19,186 @@
 					<MenuItem Header="Load Image replacing selected slot..." Command="{Binding $parent[Window].SlotReplaceImage}"/>
 				</MenuItem>
 			</Menu>
-			<TextBlock/>
-		</DockPanel>
+
+			<Button Content="Edit load order..." x:Name="loadOrderButton">
+				<Button.Flyout>
+					<MenuFlyout ItemsSource="{Binding Source={x:Static app:Common.loadOrder}}">
+						<MenuFlyout.ItemContainerTheme>
+							<ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}" x:DataType="app:EditableLoadOrderMod">
+
+								<Setter Property="Header" Value="{Binding LoadOrderModName}"/>
+								<Setter Property="Command" Value="{Binding RemoveModFromLoadOrder}"/>
+
+							</ControlTheme>
+						</MenuFlyout.ItemContainerTheme>
+					</MenuFlyout>
+				</Button.Flyout>
+			</Button>
+			
+		</WrapPanel>
 		
 		<!--<Button Command="{Binding OpenStarsystemScreen}" Content="Open Starsystem Screen"/>-->
 		<rxui:RoutedViewHost Grid.Row="0" Router="{Binding Router}">
 			<rxui:RoutedViewHost.DefaultContent>
-				<Grid ColumnDefinitions="350,440" RowDefinitions="Auto,Auto,Auto,Auto,Auto" Margin="20,30,0,0" x:Name="grid">
-					
-					<TextBlock Text="" Grid.Row="0" Grid.Column="1" x:Name="fileName" FontWeight="Bold" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="8,0,8,0" TextWrapping="Wrap"/>
-
-					<Border Grid.Row="2" Grid.Column="0" Background="#ff21262b" CornerRadius="20" Padding="5">
-						<StackPanel>
-
-							<TextBlock Text="Biomes" FontWeight="Bold" FontSize="17" HorizontalAlignment="Center" Padding="0,20,0,0"/>
-							
-							<DataGrid Margin="20" x:Name="BiomesList"
-								AutoGenerateColumns="False" IsReadOnly="True"
-								GridLinesVisibility="All"
-								BorderThickness="1" BorderBrush="Gray">
-
-								<DataGrid.Columns>
-									<DataGridTemplateColumn Header="Color" Width="100">
-										<DataGridTemplateColumn.CellTemplate>
-											<DataTemplate>
-												<StackPanel>
-													<Button Click="CopyColor"
-															HorizontalAlignment="Stretch"
-															VerticalAlignment="Stretch"
-															Background="{Binding ButtonColor, Mode=OneWay}"
-															HorizontalContentAlignment="Center"
-															ToolTip.Tip="{Binding ButtonColor}">Copy Color</Button>
-												</StackPanel>
-											</DataTemplate>
-										</DataGridTemplateColumn.CellTemplate>
-									</DataGridTemplateColumn>
-									
-									<DataGridTemplateColumn Header="ID">
-										<DataGridTemplateColumn.CellTemplate>
-											<DataTemplate>
-												<StackPanel>
-													<TextBlock Text="{Binding Id}" Padding="5"/>
-												</StackPanel>
-											</DataTemplate>
-										</DataGridTemplateColumn.CellTemplate>
-									</DataGridTemplateColumn>
-
-									<DataGridTemplateColumn Header="Name">
-										<DataGridTemplateColumn.CellTemplate>
-											<DataTemplate>
-												<StackPanel>
-													<TextBlock Text="{Binding Name}" Padding="5"/>
-												</StackPanel>
-											</DataTemplate>
-										</DataGridTemplateColumn.CellTemplate>
-									</DataGridTemplateColumn>
-								</DataGrid.Columns>								
-							</DataGrid>
-
-
-							<TextBlock Text="Resources" FontWeight="Bold" FontSize="17" HorizontalAlignment="Center" Padding="0,20,0,0"/>
-
-							<DataGrid Margin="20" x:Name="ResourcesList"
-								AutoGenerateColumns="False" IsReadOnly="True"
-								GridLinesVisibility="All"
-								BorderThickness="1" BorderBrush="Gray">
-
-								<DataGrid.Columns>
-									<DataGridTemplateColumn Header="Color" Width="100">
-										<DataGridTemplateColumn.CellTemplate>
-											<DataTemplate>
-												<StackPanel>
-													<Button Click="CopyColor"
-															HorizontalAlignment="Stretch"
-															VerticalAlignment="Stretch"
-															Background="{Binding ButtonColor, Mode=OneWay}"
-															HorizontalContentAlignment="Center"
-															ToolTip.Tip="{Binding ButtonColor}">Copy Color</Button>
-												</StackPanel>
-											</DataTemplate>
-										</DataGridTemplateColumn.CellTemplate>
-									</DataGridTemplateColumn>
-
-									<DataGridTemplateColumn Header="ID">
-										<DataGridTemplateColumn.CellTemplate>
-											<DataTemplate>
-												<StackPanel>
-													<TextBlock Text="{Binding Id}" Padding="5"/>
-												</StackPanel>
-											</DataTemplate>
-										</DataGridTemplateColumn.CellTemplate>
-									</DataGridTemplateColumn>
-
-									<DataGridTemplateColumn Header="Name">
-										<DataGridTemplateColumn.CellTemplate>
-											<DataTemplate>
-												<StackPanel>
-													<TextBlock Text="{Binding Name}" Padding="5"/>
-												</StackPanel>
-											</DataTemplate>
-										</DataGridTemplateColumn.CellTemplate>
-									</DataGridTemplateColumn>
-								</DataGrid.Columns>
-
-							</DataGrid>
+				<WrapPanel>
+					<Grid ColumnDefinitions="350,440" RowDefinitions="Auto,Auto,Auto,Auto,Auto" Margin="20,30,0,0" x:Name="grid">
+						<StackPanel Grid.Row="0" Grid.Column="1">
+							<TextBlock Text="" x:Name="fileName" FontWeight="Bold" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="8,0,8,0" TextWrapping="Wrap"/>
+							<TextBlock Text="" x:Name="esmName" FontWeight="Bold" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="8,0,8,0" TextWrapping="Wrap"/>
 						</StackPanel>
-					</Border>
+
+						<Border Grid.Row="2" Grid.Column="0" Background="#ff21262b" CornerRadius="20" Padding="5">
+							<StackPanel>
+
+								<TextBlock Text="Biomes" FontWeight="Bold" FontSize="17" HorizontalAlignment="Center" Padding="0,20,0,0"/>
+
+								<DataGrid Margin="20" x:Name="BiomesList"
+									AutoGenerateColumns="False" IsReadOnly="True"
+									GridLinesVisibility="All"
+									BorderThickness="1" BorderBrush="Gray">
+
+									<DataGrid.Columns>
+										<DataGridTemplateColumn Header="Color" Width="100">
+											<DataGridTemplateColumn.CellTemplate>
+												<DataTemplate>
+													<StackPanel>
+														<Button Click="CopyColor"
+																HorizontalAlignment="Stretch"
+																VerticalAlignment="Stretch"
+																Background="{Binding ButtonColor, Mode=OneWay}"
+																HorizontalContentAlignment="Center"
+																ToolTip.Tip="{Binding ButtonColor}">Copy Color</Button>
+													</StackPanel>
+												</DataTemplate>
+											</DataGridTemplateColumn.CellTemplate>
+										</DataGridTemplateColumn>
+
+										<DataGridTemplateColumn Header="ID">
+											<DataGridTemplateColumn.CellTemplate>
+												<DataTemplate>
+													<StackPanel>
+														<TextBlock Text="{Binding ID}" Padding="5"/>
+													</StackPanel>
+												</DataTemplate>
+											</DataGridTemplateColumn.CellTemplate>
+										</DataGridTemplateColumn>
+
+										<DataGridTemplateColumn Header="Name">
+											<DataGridTemplateColumn.CellTemplate>
+												<DataTemplate>
+													<StackPanel>
+														<TextBlock Text="{Binding Name}" Padding="5"/>
+													</StackPanel>
+												</DataTemplate>
+											</DataGridTemplateColumn.CellTemplate>
+										</DataGridTemplateColumn>
+									</DataGrid.Columns>
+								</DataGrid>
+
+
+								<TextBlock Text="Resources" FontWeight="Bold" FontSize="17" HorizontalAlignment="Center" Padding="0,20,0,0"/>
+
+								<DataGrid Margin="20" x:Name="ResourcesList"
+									AutoGenerateColumns="False" IsReadOnly="True"
+									GridLinesVisibility="All"
+									BorderThickness="1" BorderBrush="Gray">
+
+									<DataGrid.Columns>
+										<DataGridTemplateColumn Header="Color" Width="100">
+											<DataGridTemplateColumn.CellTemplate>
+												<DataTemplate>
+													<StackPanel>
+														<Button Click="CopyColor"
+																HorizontalAlignment="Stretch"
+																VerticalAlignment="Stretch"
+																Background="{Binding ButtonColor, Mode=OneWay}"
+																HorizontalContentAlignment="Center"
+																ToolTip.Tip="{Binding ButtonColor}">Copy Color</Button>
+													</StackPanel>
+												</DataTemplate>
+											</DataGridTemplateColumn.CellTemplate>
+										</DataGridTemplateColumn>
+
+										<DataGridTemplateColumn Header="ID">
+											<DataGridTemplateColumn.CellTemplate>
+												<DataTemplate>
+													<StackPanel>
+														<TextBlock Text="{Binding RawIDString}" Padding="5"/>
+													</StackPanel>
+												</DataTemplate>
+											</DataGridTemplateColumn.CellTemplate>
+										</DataGridTemplateColumn>
+
+										<DataGridTemplateColumn Header="Name">
+											<DataGridTemplateColumn.CellTemplate>
+												<DataTemplate>
+													<StackPanel>
+														<TextBlock Text="{Binding Name}" Padding="5"/>
+													</StackPanel>
+												</DataTemplate>
+											</DataGridTemplateColumn.CellTemplate>
+										</DataGridTemplateColumn>
+									</DataGrid.Columns>
+
+								</DataGrid>
+							</StackPanel>
+						</Border>
+
+						<Border Grid.Row="1" Grid.Column="0" Background="#ff21262b" CornerRadius="20" Padding="5">
+							<TextBlock Text="Number of biomes" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold" Margin="5"/>
+						</Border>
+
+						<Border Grid.Row="1" Grid.Column="1" Background="#ff121617" CornerRadius="20" Padding="5">
+							<TextBlock Text="" x:Name="numBiomes" VerticalAlignment="Center" Margin="5"/>
+						</Border>
+
+						<!--Biome grids-->
+						<Border Grid.Row="2" Grid.Column="1" Background="#ff121617" CornerRadius="20" Padding="5">
+							<Grid ColumnDefinitions="210,210" RowDefinitions="250,250" Margin="5,5,5,5" x:Name="grid2">
+
+								<Button Grid.Row="0" Grid.Column="0" x:Name="BiomGridN" Click="SelectImageClickHandler">
+									<Button.Content>
+										<StackPanel>
+											<Image Height="200" Width="200" x:Name="imgBiomGridN"/>
+											<TextBlock Text="Biome Grid North" VerticalAlignment="Top" HorizontalAlignment="Center" IsVisible="false" x:Name="textBiomGridN"/>
+										</StackPanel>
+									</Button.Content>
+								</Button>
+
+								<Button Grid.Row="0" Grid.Column="1" x:Name="BiomGridS" Click="SelectImageClickHandler">
+									<Button.Content>
+										<StackPanel>
+											<Image Height="200" Width="200" x:Name="imgBiomGridS"/>
+											<TextBlock Text="Biome Grid South" VerticalAlignment="Top" HorizontalAlignment="Center" IsVisible="false" x:Name="textBiomGridS"/>
+										</StackPanel>
+									</Button.Content>
+								</Button>
+
+								<Button Grid.Row="1" Grid.Column="0" x:Name="ResGridN" Click="SelectImageClickHandler">
+									<Button.Content>
+										<StackPanel>
+											<Image Height="200" Width="200" x:Name="imgResGridN"/>
+											<TextBlock Text="Resource Grid North" VerticalAlignment="Top" HorizontalAlignment="Center" IsVisible="false" x:Name="textResGridN"/>
+										</StackPanel>
+									</Button.Content>
+								</Button>
+
+								<Button Grid.Row="1" Grid.Column="1" x:Name="ResGridS" Click="SelectImageClickHandler">
+									<Button.Content>
+										<StackPanel>
+											<Image Height="200" Width="200" x:Name="imgResGridS"/>
+											<TextBlock Text="Resource Grid South" VerticalAlignment="Top" HorizontalAlignment="Center" IsVisible="false" x:Name="textResGridS"/>
+										</StackPanel>
+									</Button.Content>
+								</Button>
+
+							</Grid>
+						</Border>
+					</Grid>
 					
-					<Border Grid.Row="1" Grid.Column="0" Background="#ff21262b" CornerRadius="20" Padding="5">
-						<TextBlock Text="Number of biomes" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold" Margin="5"/>
-					</Border>
-
-					<Border Grid.Row="1" Grid.Column="1" Background="#ff121617" CornerRadius="20" Padding="5">
-						<TextBlock Text="" x:Name="numBiomes" VerticalAlignment="Center" Margin="5"/>
-					</Border>
-
-					<!--Biome grids-->
-					<Border Grid.Row="2" Grid.Column="1" Background="#ff121617" CornerRadius="20" Padding="5">
-						<Grid ColumnDefinitions="210,210" RowDefinitions="250,250" Margin="5,5,5,5" x:Name="grid2">
-
-							<Button Grid.Row="0" Grid.Column="0" x:Name="BiomGridN" Click="SelectImageClickHandler">
-								<Button.Content>
-									<StackPanel>
-										<Image Height="200" Width="200" x:Name="imgBiomGridN"/>
-										<TextBlock Text="Biome Grid North" VerticalAlignment="Top" HorizontalAlignment="Center" IsVisible="false" x:Name="textBiomGridN"/>
-									</StackPanel>
-								</Button.Content>
-							</Button>
-
-							<Button Grid.Row="0" Grid.Column="1" x:Name="BiomGridS" Click="SelectImageClickHandler">
-								<Button.Content>
-									<StackPanel>
-										<Image Height="200" Width="200" x:Name="imgBiomGridS"/>
-										<TextBlock Text="Biome Grid South" VerticalAlignment="Top" HorizontalAlignment="Center" IsVisible="false" x:Name="textBiomGridS"/>
-									</StackPanel>
-								</Button.Content>
-							</Button>
-							
-							<Button Grid.Row="1" Grid.Column="0" x:Name="ResGridN" Click="SelectImageClickHandler">
-								<Button.Content>
-									<StackPanel>
-										<Image Height="200" Width="200" x:Name="imgResGridN"/>
-										<TextBlock Text="Resource Grid North" VerticalAlignment="Top" HorizontalAlignment="Center" IsVisible="false" x:Name="textResGridN"/>
-									</StackPanel>
-								</Button.Content>
-							</Button>
-
-							<Button Grid.Row="1" Grid.Column="1" x:Name="ResGridS" Click="SelectImageClickHandler">
-								<Button.Content>
-									<StackPanel>
-										<Image Height="200" Width="200" x:Name="imgResGridS"/>
-										<TextBlock Text="Resource Grid South" VerticalAlignment="Top" HorizontalAlignment="Center" IsVisible="false" x:Name="textResGridS"/>
-									</StackPanel>
-								</Button.Content>
-							</Button>
-							
-						</Grid>
-					</Border>
-				</Grid>
+					<!-- Esm info -->
+					
+				</WrapPanel>
 			</rxui:RoutedViewHost.DefaultContent>
 			<rxui:RoutedViewHost.ViewLocator>
 				<app:AppViewLocator />
