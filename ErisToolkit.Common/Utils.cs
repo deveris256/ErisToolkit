@@ -25,6 +25,18 @@ namespace ErisToolkit.Common;
  */
 public static class Utils
 {
+    public static List<string> ForbiddenModNames = [
+        "Starfield.esm",
+        "BlueprintShips-Starfield.esm",
+        "ShatteredSpace.esm",
+        "SFBGS003.esm",
+        "SFBGS004.esm",
+        "SFBGS005.esm",
+        "SFBGS006.esm",
+        "SFBGS007.esm",
+        "SFBGS008.esm"
+    ];
+
     // File pickers
     public static FilePickerFileType BiomFilePicker { get; } = new(".Biom file")
     {
@@ -47,18 +59,15 @@ public static class Utils
      */
     public static IStarfieldModDisposableGetter? LoadMod(string pluginFile)
     {
-        {
-            try
-            { 
+        try
+        { 
             IStarfieldModDisposableGetter mod = StarfieldMod.Create(StarfieldRelease.Starfield)
-                                                            .FromPath(pluginFile)
-                                                            .WithLoadOrderFromHeaderMasters()
-                                                            .WithDefaultDataFolder()
-                                                            .Construct();
-                return mod;
-            } catch (Exception) { return null;  }
-            
-        }
+                                                        .FromPath(pluginFile)
+                                                        .WithLoadOrderFromHeaderMasters()
+                                                        .WithDefaultDataFolder()
+                                                        .Construct();
+            return mod;
+        } catch (Exception) { return null;  }
     }
 
     // Conversion to Avalonia bitmap

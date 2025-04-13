@@ -94,9 +94,43 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         {
             string filePath = Uri.UnescapeDataString(files.Result[0].Path.AbsolutePath);
 
-            Common.AddModToLoadOrder(Utils.LoadMod(filePath));
+            var mod = Utils.LoadMod(filePath);
+            if (mod != null) {
+                try
+                {
+                    Common.AddModToLoadOrder(mod, topLevel);
+                } catch {
+                    
+                }
+            };
+        }
+    }
 
-            if (Common.mod != null) esmName.Text = $"Loaded {Common.mod.ModKey.FileName}";
+    public async void LoadPluginForEditingClickHandler()
+    {
+        var topLevel = GetTopLevel(this);
+        var files = topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Open Plugin File for Editing",
+            AllowMultiple = false,
+            FileTypeFilter = new[] { Utils.PluginFilePicker }
+        });
+
+        if (files.Result.Count > 0 && files.Result[0] != null)
+        {
+            string filePath = Uri.UnescapeDataString(files.Result[0].Path.AbsolutePath);
+
+            var mod = Utils.LoadMod(filePath);
+
+            if (mod == null) { return; }
+
+            Common.SetMod(mod, topLevel);
+
+            if (Common.mod == null) { return; }
+
+            Common.AddModToLoadOrder(mod, topLevel);
+
+            esmName.Text = $"Loaded {Common.mod.ModKey.FileName}";
         }
     }
 

@@ -11,6 +11,7 @@
 		<WrapPanel>
 			<Menu DockPanel.Dock="Top">
 				<MenuItem Header="_File">
+					<MenuItem Header="Load mod for editing..." Command="{Binding $parent[Window].LoadPluginForEditingClickHandler}"/>
 					<MenuItem Header="Add mod to load order..." Command="{Binding $parent[Window].LoadEsmClickHandler}"/>
 					<MenuItem Header="Open Biom..." Command="{Binding $parent[Window].LoadBiomFile}"/>
 					<MenuItem Header="Save Biom..." Command="{Binding $parent[Window].SaveBiomFile}"/>

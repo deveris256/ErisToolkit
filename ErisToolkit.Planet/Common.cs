@@ -14,6 +14,10 @@ using System.Collections.Generic;
 using Mutagen.Bethesda.Plugins.Cache.Internals.Implementations;
 using Mutagen.Bethesda.Plugins.Order;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Mutagen.Bethesda.Installs;
+using Avalonia.Controls;
+using Mutagen.Bethesda.Plugins.Exceptions;
+using Avalonia.Platform.Storage;
 
 /* 
  * ErisToolkit by Deveris256
@@ -32,17 +36,17 @@ public static class Common
 
     public static IGameEnvironment<IStarfieldMod, IStarfieldModGetter>? env;
 
-    private static IStarfieldModDisposableGetter? _mod;
-    public static IStarfieldModDisposableGetter? mod {
-        get => _mod;
-        set
-        {
-            if (value?.ModKey.Name == "Starfield") { return; }
-            if (_mod == value) { return; }
+    public static IStarfieldModDisposableGetter? mod { get; private set; }
 
-            _mod = value;
-            try { UpdateBiomData(); } catch { }
-        }
+    public static void SetMod(IStarfieldModDisposableGetter plugin, TopLevel topLevel)
+    {
+        if (plugin == null) { return; }
+        if (Utils.ForbiddenModNames.Contains(plugin?.ModKey.FileName)) { return; }
+        if (mod == plugin) { return; }
+
+        mod = plugin;
+        try { UpdateData(); } catch { }
+        AddModToLoadOrder(plugin, topLevel);
     }
 
     public static ImmutableLoadOrderLinkCache<IStarfieldMod, IStarfieldModGetter>? linkCache { get; private set; }
@@ -56,7 +60,7 @@ public static class Common
             if (_biom == value) return;
 
             _biom = value;
-            try { UpdateBiomData(); } catch { }
+            try { UpdateData(); } catch { }
         }
     }
 
@@ -116,7 +120,9 @@ public static class Common
         var lo = new LoadOrder<IStarfieldModGetter>();
 
         foreach (var mod in Common.loadOrder)
-        { lo.Add(mod.LoadOrderMod); }
+        {
+            lo.Add(mod.LoadOrderMod);
+        }
 
         return lo;
     }
@@ -136,34 +142,90 @@ public static class Common
             ), 1);
 
             var biomeId = biom.biomStruct.BiomeIds[i];
+            bool processed = false;
 
-            if (mod != null && linkCache.TryResolve<IBiomeGetter>(FormKey.Factory($"{biomeId:x6}:{mod.ModKey.FileName}"), out var formLink))
+
+            foreach (var loMod in loadOrder)
             {
-                biomesList.Add(new BiomDataList(
-                    biomeId,
-                    formLink.EditorID,
-                    color
-               ));
-            } else
-            {
-                biomesList.Add(new BiomDataList(
-                    biomeId,
-                    "???",
-                    color
-               ));
+                if (linkCache != null &&
+                    linkCache.TryResolve<IBiomeGetter>(FormKey.Factory($"{biomeId:x6}:{loMod.LoadOrderMod.ModKey.FileName}"), out var formLink))
+                {
+                    biomesList.Add(new BiomDataList(
+                        biomeId,
+                        formLink.EditorID,
+                        color
+                    ));
+                    processed = true;
+                    break;
+                }
             }
-            
+
+            if (!processed)
+            {
+                biomesList.Add(new BiomDataList(
+                        biomeId,
+                        "???",
+                        color
+                    ));
+            }
         }
     }
 
-    public static void AddModToLoadOrder(IStarfieldModDisposableGetter mod)
+    public static void AddModToLoadOrder(IStarfieldModDisposableGetter mod, TopLevel topLevel)
     {
         var loadOrderMod = new EditableLoadOrderMod(mod);
 
-        if (loadOrder.Contains(loadOrderMod)) { return; }
+        var masterRefsRaw = mod.ModHeader.MasterReferences;
 
-        loadOrder.Add(loadOrderMod);
-        UpdateModCache();
+        List<string> modNames = new();
+
+        foreach (var lomod in loadOrder)
+        {
+            if (lomod.LoadOrderModName == loadOrderMod.LoadOrderModName)
+            {
+                return;
+            }
+            modNames.Add(lomod.LoadOrderMod.ModKey.FileName);
+        }
+
+        if (masterRefsRaw.Count == 0)
+        {
+            loadOrder.Add(loadOrderMod);
+            UpdateData();
+            return;
+        }
+
+        foreach (var masterRef in masterRefsRaw)
+        {
+            if (!modNames.Contains(masterRef.Master.FileName))
+            {
+                var files = topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+                {
+                    Title = $"Please open {masterRef.Master.FileName}",
+                    AllowMultiple = false,
+                    FileTypeFilter = new[] { Utils.PluginFilePicker }
+                });
+
+                if (files.Result.Count > 0 && files.Result[0] != null)
+                {
+                    loadOrder.Add(loadOrderMod);
+
+                    string filePath = Uri.UnescapeDataString(files.Result[0].Path.AbsolutePath);
+
+                    var masterMod = Utils.LoadMod(filePath);
+
+                    if (masterMod != null) { AddModToLoadOrder(masterMod, topLevel); }
+                }
+                else
+                {
+                    UpdateData();
+                    return;
+                }
+            }
+        }
+
+        UpdateData();
+        return;
     }
 
     public static void RemoveModFromLoadOrder(EditableLoadOrderMod mod)
@@ -173,26 +235,22 @@ public static class Common
 
         try
         {
-            UpdateModCache();
-        } catch
+            UpdateData();
+        } catch (Exception)
         {
             loadOrder.Insert(index, mod);
-            UpdateModCache();
+            UpdateData();
         }
     }
 
-    public static void UpdateModCache()
+    public static void UpdateData()
     {
         env = GameEnvironment.Typical.Builder<IStarfieldMod, IStarfieldModGetter>(GameRelease.Starfield)
+            .WithTargetDataFolder(GameLocations.GetDataFolder(GameRelease.Starfield))
             .WithLoadOrder(GetLoadOrder())
             .Build();
        
         linkCache = env.LoadOrder.ToImmutableLinkCache();
-    }
-
-    public static void UpdateBiomData()
-    {
-        var currentBiom = biom ?? throw new InvalidOperationException("Biom is null");
 
         AddBiomeData();
         AddResourceData();
