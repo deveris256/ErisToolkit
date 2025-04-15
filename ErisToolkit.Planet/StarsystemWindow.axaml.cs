@@ -54,7 +54,7 @@ public partial class StarsystemWindow : ReactiveUserControl<StarsystemWindowView
 
     public static ObservableCollection<StarViewModel> LoadPlanets()
     {
-        using var mod = Common.mod;
+        var mod = Common.mod;
         ObservableCollection<StarViewModel> stars = new ObservableCollection<StarViewModel>();
 
         foreach (var star in mod.Stars)

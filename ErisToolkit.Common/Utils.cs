@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Mutagen.Bethesda.Plugins;
+using Mutagen.Bethesda.Plugins.Order;
 
 namespace ErisToolkit.Common;
 
@@ -54,20 +55,31 @@ public static class Utils
     };
 
     /*
-     * TODO:
-     * - Load with specified masters
+     * Loads a read-only mod
+     * TODO: Utilize groupMask for faster load
      */
-    public static IStarfieldModDisposableGetter? LoadMod(string pluginFile)
+    public static IStarfieldModDisposableGetter? LoadModReadOnly(string pluginFile, GroupMask groupMask = null)
     {
         try
         { 
             IStarfieldModDisposableGetter mod = StarfieldMod.Create(StarfieldRelease.Starfield)
                                                         .FromPath(pluginFile)
-                                                        .WithLoadOrderFromHeaderMasters()
+                                                        .WithDefaultLoadOrder()
                                                         .WithDefaultDataFolder()
                                                         .Construct();
             return mod;
         } catch (Exception) { return null;  }
+    }
+
+    public static IStarfieldMod LoadModEditable(string pluginFile, LoadOrder<IStarfieldModGetter> loadOrder)
+    {
+        IStarfieldMod mod = StarfieldMod.Create(StarfieldRelease.Starfield)
+                                                        .FromPath(pluginFile)
+                                                        .WithLoadOrder(loadOrder)
+                                                        .WithDefaultDataFolder()
+                                                        .Mutable()
+                                                        .Construct();
+        return mod;
     }
 
     // Conversion to Avalonia bitmap

@@ -21,16 +21,29 @@ using Reloaded.Memory.Pointers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.ComponentModel;
 using Avalonia.Styling;
+using Avalonia.Input;
+using Noggog;
+using System.Linq;
+using System.Xml.Linq;
+using DynamicData;
+using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Threading;
+using Avalonia.Controls.Templates;
 
 namespace ErisToolkit.Planet;
 
-public partial class MainWindowViewModel : ReactiveObject, IScreen
+public partial class MainWindowViewModel : ObservableObject, IScreen
 {
     public void OpenCanvas()
     {
         var canvasViewModel = new CanvasWindowViewModel(this);
         Router.Navigate.Execute(canvasViewModel);
     }
+
+    public ObservableCollection<StarsystemView> RootNodes { get; } = new ObservableCollection<StarsystemView>();
+
+    [ObservableProperty]
+    private HierarchicalTreeDataGridSource<StarsystemView> _starSystemRep;
 
     public RoutingState Router { get; } = new RoutingState();
 
@@ -54,6 +67,50 @@ public partial class MainWindowViewModel : ReactiveObject, IScreen
                 return Router.Navigate.Execute(new StarsystemWindowViewModel(this));
             }
         });
+
+        StarSystemRep = new HierarchicalTreeDataGridSource<StarsystemView>(RootNodes)
+        {
+            Columns =
+            {
+                new HierarchicalExpanderColumn<StarsystemView>(
+                    new TemplateColumn<StarsystemView>(
+                        "Property",
+                        new FuncDataTemplate<StarsystemView>((node, _) =>
+                            new TextBlock { Text = node?.Name }
+                        )
+                    ),
+                    x => x.Children
+                ),
+                new TemplateColumn<StarsystemView>(
+                    "Value",
+                    new FuncDataTemplate<StarsystemView>((node, _) =>
+                    {
+                        return node?.Value switch
+                        {
+                            Enum e => new ComboBox
+                            {
+                                ItemsSource = Enum.GetValues(e.GetType()),
+                                SelectedItem = e
+                            },
+                            _ => new TextBlock { Text = node?.Value?.ToString() }
+                        };
+                    })
+                )
+            }
+        };
+    }
+
+    public void LoadStarRecursively(int index)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            RootNodes.Clear();
+
+            var starName = Common.starList[index];
+            var root = new StarsystemView(starName, "", index);
+
+            RootNodes.Add(root);
+        });
     }
 }
 
@@ -62,6 +119,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     List<Avalonia.Controls.Image> images;
     List<Avalonia.Controls.Button> buttons;
     MainWindowViewModel viewModel;
+
 
     public MainWindow()
     {
@@ -78,6 +136,29 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 
         BiomesList.ItemsSource = Common.biomesList;
         ResourcesList.ItemsSource = Common.resourcesList;
+
+        starSearch.ItemsSource = Common.starList;
+    }
+
+    private void OnStarSearchKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Avalonia.Input.Key.Enter)
+        {
+            var autoCompleteBox = (AutoCompleteBox)sender;
+            string enteredText = autoCompleteBox.Text;
+
+            int matchedIndex = Common.starList.IndexOf(enteredText, StringComparer.OrdinalIgnoreCase);
+
+            if (matchedIndex == -1)
+            {
+                e.Handled = true;
+                return;
+            }
+
+            ((MainWindowViewModel)DataContext).LoadStarRecursively(matchedIndex);
+
+            e.Handled = true;
+        }
     }
 
     public async void LoadEsmClickHandler()
@@ -94,19 +175,14 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         {
             string filePath = Uri.UnescapeDataString(files.Result[0].Path.AbsolutePath);
 
-            var mod = Utils.LoadMod(filePath);
+            var mod = Utils.LoadModReadOnly(filePath);
             if (mod != null) {
-                try
-                {
-                    Common.AddModToLoadOrder(mod, topLevel);
-                } catch {
-                    
-                }
+                Common.AddModToLoadOrder(mod, topLevel);
             };
         }
     }
 
-    public async void LoadPluginForEditingClickHandler()
+    public void LoadPluginForEditingClickHandler()
     {
         var topLevel = GetTopLevel(this);
         var files = topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
@@ -120,15 +196,9 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         {
             string filePath = Uri.UnescapeDataString(files.Result[0].Path.AbsolutePath);
 
-            var mod = Utils.LoadMod(filePath);
-
-            if (mod == null) { return; }
-
-            Common.SetMod(mod, topLevel);
+            Common.SetMod(filePath, topLevel);
 
             if (Common.mod == null) { return; }
-
-            Common.AddModToLoadOrder(mod, topLevel);
 
             esmName.Text = $"Loaded {Common.mod.ModKey.FileName}";
         }

@@ -3,7 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:rxui="http://reactiveui.net"
-        mc:Ignorable="d" Width="900" Height="700"
+        mc:Ignorable="d" Width="1200" Height="700"
 		xmlns:app="clr-namespace:ErisToolkit.Planet"
         x:Class="ErisToolkit.Planet.MainWindow">
 	<!--Nav-->
@@ -42,7 +42,7 @@
 		<rxui:RoutedViewHost Grid.Row="0" Router="{Binding Router}">
 			<rxui:RoutedViewHost.DefaultContent>
 				<WrapPanel>
-					<Grid ColumnDefinitions="350,440" RowDefinitions="Auto,Auto,Auto,Auto,Auto" Margin="20,30,0,0" x:Name="grid">
+					<Grid ColumnDefinitions="350,440,350" RowDefinitions="100,Auto,Auto,Auto,Auto" Margin="20,30,0,0" x:Name="grid">
 						<StackPanel Grid.Row="0" Grid.Column="1">
 							<TextBlock Text="" x:Name="fileName" FontWeight="Bold" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="8,0,8,0" TextWrapping="Wrap"/>
 							<TextBlock Text="" x:Name="esmName" FontWeight="Bold" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="8,0,8,0" TextWrapping="Wrap"/>
@@ -195,9 +195,32 @@
 
 							</Grid>
 						</Border>
-					</Grid>
+						
+						<Border Grid.Row="1" Grid.Column="2" Background="#ff21262b" CornerRadius="20" Padding="5">
+								<TextBlock Text="Starsystem" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold" Margin="5"/>
+							</Border>
 					
-					<!-- Esm info -->
+						<StackPanel Grid.Row="2" Grid.Column="2">
+							
+							
+							<Border Background="#ff21262b" CornerRadius="20" Padding="5">
+								<ScrollViewer>
+									<StackPanel>
+										<TextBlock Grid.Row="0" Grid.Column="0" Text="Star Name" VerticalAlignment="Center" FontWeight="Bold" Margin="5"></TextBlock>
+										<AutoCompleteBox x:Name="starSearch" KeyDown="OnStarSearchKeyDown" FilterMode="StartsWith" />
+									</StackPanel>
+								</ScrollViewer>
+							</Border>
+
+							<Border Background="#ff21262b" CornerRadius="20" Padding="5">
+								<TreeDataGrid Source="{Binding StarSystemRep}" Height="400"/>
+							</Border>
+						
+						</StackPanel>
+						
+					
+					
+					</Grid>
 					
 				</WrapPanel>
 			</rxui:RoutedViewHost.DefaultContent>
