@@ -29,6 +29,7 @@ using DynamicData;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Threading;
 using Avalonia.Controls.Templates;
+using System.Collections.Specialized;
 
 namespace ErisToolkit.Planet;
 
@@ -39,6 +40,9 @@ public partial class MainWindowViewModel : ObservableObject, IScreen
         var canvasViewModel = new CanvasWindowViewModel(this);
         Router.Navigate.Execute(canvasViewModel);
     }
+
+    [ObservableProperty]
+    private string? _modName;
 
     public ObservableCollection<StarsystemView> RootNodes { get; } = new ObservableCollection<StarsystemView>();
 
@@ -51,13 +55,10 @@ public partial class MainWindowViewModel : ObservableObject, IScreen
 
     public MainWindowViewModel()
     {
+        Common.loadOrder.CollectionChanged += UpdateModName;
+
         OpenStarsystemScreen = ReactiveCommand.CreateFromObservable(() =>
         {
-            if (Common.mod == null)
-            {
-                var mainWindow = new MainWindow();
-            }
-
             if (Router.NavigationStack.Count > 0)
             {
                 return Router.NavigateBack.Execute();
@@ -98,6 +99,11 @@ public partial class MainWindowViewModel : ObservableObject, IScreen
                 )
             }
         };
+    }
+
+    private void UpdateModName(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        ModName = $"{Common.currentMod?.ModKey.FileName}" ?? string.Empty;
     }
 
     public void LoadStarRecursively(int index)
@@ -174,12 +180,10 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         if (files.Result.Count > 0 && files.Result[0] != null)
         {
             string filePath = Uri.UnescapeDataString(files.Result[0].Path.AbsolutePath);
-
-            var mod = Utils.LoadModReadOnly(filePath);
-            if (mod != null) {
-                Common.AddModToLoadOrder(mod, topLevel);
-            };
+            Common.AddModToLoadOrder(filePath, topLevel, false);
         }
+
+        ((MainWindowViewModel)DataContext).ModName = Common.currentMod?.ModKey.FileName;
     }
 
     public void LoadPluginForEditingClickHandler()
@@ -196,11 +200,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         {
             string filePath = Uri.UnescapeDataString(files.Result[0].Path.AbsolutePath);
 
-            Common.SetMod(filePath, topLevel);
-
-            if (Common.mod == null) { return; }
-
-            esmName.Text = $"Loaded {Common.mod.ModKey.FileName}";
+            Common.AddModToLoadOrder(filePath, topLevel, true);
         }
     }
 

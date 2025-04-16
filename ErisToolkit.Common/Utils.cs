@@ -58,7 +58,7 @@ public static class Utils
      * Loads a read-only mod
      * TODO: Utilize groupMask for faster load
      */
-    public static IStarfieldModDisposableGetter? LoadModReadOnly(string pluginFile, GroupMask groupMask = null)
+    public static IStarfieldModGetter? LoadModReadOnly(string pluginFile, GroupMask groupMask = null)
     {
         try
         { 

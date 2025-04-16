@@ -46,25 +46,13 @@ public static class Common
 
     public static IGameEnvironment<IStarfieldMod, IStarfieldModGetter>? env;
 
-    public static IStarfieldMod? mod { get; private set; }
-
-    public static void SetMod(string pluginPath, TopLevel topLevel)
-    {
-        IStarfieldMod eMod;
-
-        if (Utils.ForbiddenModNames.Contains(Path.GetFileName(pluginPath))) { return; }
-
-        var masterRefs = MasterReferenceCollection.FromPath(pluginPath, GameRelease.Starfield).Masters;
-
-        HandleModMasters(masterRefs, topLevel);
-        try
+    public static IStarfieldMod? currentMod {
+        get
         {
-            eMod = Utils.LoadModEditable(pluginPath, GetLoadOrder());
-        } catch { return; }
-
-        AddModToLoadOrder(eMod, topLevel, true);
-
-        mod = eMod;
+            var editableMods = loadOrder.Where(x => x.editable == true);
+            if (editableMods.Any()) { return (IStarfieldMod?)editableMods.First().LoadOrderMod; }
+            return null;
+        }
     }
 
     public static ImmutableLoadOrderLinkCache<IStarfieldMod, IStarfieldModGetter>? linkCache { get; private set; }
@@ -142,7 +130,7 @@ public static class Common
 
         foreach (var lomod in Common.loadOrder)
         {
-            lo.Add((dynamic)lomod.LoadOrderMod);
+            lo.Add((IStarfieldModGetter)lomod.LoadOrderMod);
         }
 
         return lo;
@@ -212,75 +200,68 @@ public static class Common
         }
     }
 
-    public static void AddModToLoadOrder<T>(T mod, TopLevel topLevel, bool editable = false) where T : IStarfieldModGetter
+    public static void AddModToLoadOrder(string modPath, TopLevel topLevel, bool editable)
     {
-        var loadOrderMod = new EditableLoadOrderMod(mod) { editable = editable } ;
-        var masterRefsRaw = mod.ModHeader?.MasterReferences;
-
-        List<dynamic> modsToAdd = new();
-
-        foreach (var lomod in loadOrder)
-        {
-            if (lomod.LoadOrderModFileName == loadOrderMod.LoadOrderModFileName)
-            {
-                return;
-            }
-        }
-
-        if (masterRefsRaw != null && masterRefsRaw.Count != 0)
-        {
-            var mastersToLoad = HandleModMasters(masterRefsRaw, topLevel);
-
-            foreach (var mastMod in mastersToLoad) { modsToAdd.Add(mastMod); }
-        }
-
-        modsToAdd.Add(loadOrderMod);
+        IStarfieldModGetter mod;
+        List<IStarfieldModGetter> masters;
         
-        foreach (var lomod in modsToAdd) { loadOrder.Add(lomod); }
+        // Check for mod name and determine if it can't be editable
+        if (editable &&
+            Utils.ForbiddenModNames.Contains(Path.GetFileName(modPath))) { return; }
+
+        masters = HandleModMasters(MasterReferenceCollection.FromPath(modPath, GameRelease.Starfield).Masters, topLevel);
+
+        // Early check if masters are there...
+        List<string> masterNames = masters.Select(x => x.ModKey.FileName.ToString()).ToList();
+        List<string> loModsNames = loadOrder.Select(x => x.LoadOrderMod.ModKey.FileName.ToString()).ToList();
+
+        foreach (var master in MasterReferenceCollection.FromPath(modPath, GameRelease.Starfield).Masters)
+        {
+            if (!masterNames.Contains(master.Master.FileName) && !loModsNames.Contains(master.Master.FileName))
+            { return; }
+        }
+
+        // Place masters in LO
+        foreach (var master in masters)
+        {
+            if (loModsNames.Contains(master.ModKey.FileName))
+            { continue; }
+
+            loadOrder.Add(new EditableLoadOrderMod(master));
+        }
+
+        // Set (temporary) mod variable
+        var currentLoadOrder = GetLoadOrder();
+        if (editable) { mod = Utils.LoadModEditable(modPath, currentLoadOrder); }
+        else { mod = Utils.LoadModReadOnly(modPath); }
+
+        // Check if mod hasn't been loaded
+        if (mod == null) { return; }
+
+        // Load mod
+        var loadOrderMod = new EditableLoadOrderMod(mod) { editable = editable };
+        loadOrder.Add(loadOrderMod);
+
         UpdateData();
     }
 
-    private static List<IStarfieldModDisposableGetter> HandleModMasters<T>(IReadOnlyList<T> masterRefsRaw, TopLevel topLevel) where T : IMasterReferenceGetter
+    private static List<IStarfieldModGetter> HandleModMasters<T>(IReadOnlyList<T> masterRefsRaw, TopLevel topLevel) where T : IMasterReferenceGetter
     {
-        var modNames = new List<string>();
+        List<IStarfieldModGetter> masterMods = new();
+        List<string> existingModNames = loadOrder.Select(x => x.LoadOrderModFileName).ToList();
 
-        foreach (var lomod in loadOrder)
+        foreach (var master in masterRefsRaw)
         {
-            modNames.Add(lomod.LoadOrderModFileName);
-        }
-
-        List<IStarfieldModDisposableGetter> masterMods = new();
-
-        int masterCount = 0;
-
-        foreach (var masterRef in masterRefsRaw)
-        {
-            if (modNames.Contains(masterRef.Master.FileName))
-            {
-                masterCount += 1;
-            }
-        }
-
-        if (masterCount == masterRefsRaw.Count)
-        {
-            return new();
-        }
-
-        foreach (var masterRef in masterRefsRaw)
-        {
-            if (modNames.Contains(masterRef.Master.FileName))
-            {
-                continue;
-            }
+            if (existingModNames.Contains(master.Master.FileName)) { continue; }
 
             var files = topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
-                Title = $"Please open {masterRef.Master.FileName}",
+                Title = $"Please open {master.Master.FileName}",
                 AllowMultiple = false,
                 FileTypeFilter = new[] {
                         new FilePickerFileType("Plugin file")
                         {
-                            Patterns = new[] { masterRef.Master.FileName.ToString() }
+                            Patterns = new[] { master.Master.FileName.ToString() }
                         }
                     }
             });
@@ -288,20 +269,7 @@ public static class Common
             if (files.Result.Count > 0 && files.Result[0] != null)
             {
                 string filePath = Uri.UnescapeDataString(files.Result[0].Path.AbsolutePath);
-
-                if (Uri.UnescapeDataString(files.Result[0].Name) != masterRef.Master.FileName)
-                {
-                    return new();
-                }
-
-                var masterMod = Utils.LoadModReadOnly(filePath);
-
-                if (masterMod != null)
-                {
-                    masterMods.Add(masterMod);
-                    AddModToLoadOrder(masterMod, topLevel);
-                }
-                else { return new(); }
+                masterMods.Add(Utils.LoadModReadOnly(filePath));
             }
             else { return new(); }
         }
@@ -311,6 +279,20 @@ public static class Common
 
     public static void RemoveModFromLoadOrder(EditableLoadOrderMod mod)
     {
+        // At first, handle the masters..
+        List<string> masterNames = new();
+
+        foreach (var loMod in loadOrder)
+        {
+            foreach (var mast in loMod.LoadOrderMod.MasterReferences)
+            {
+                masterNames.Add(mast.Master.FileName);
+            }
+        }
+
+        // Can't remove the mod that's a master of another mod
+        if (masterNames.Contains(mod.LoadOrderModFileName)) { return; }
+
         var index = loadOrder.IndexOf(mod);
         loadOrder.Remove(mod);
 
@@ -326,7 +308,7 @@ public static class Common
 
     public static void UpdateData()
     {
-        if (mod == null)
+        if (currentMod == null)
         {
             env = GameEnvironment.Typical.Builder<IStarfieldMod, IStarfieldModGetter>(GameRelease.Starfield)
                 .WithTargetDataFolder(GameLocations.GetDataFolder(GameRelease.Starfield))
@@ -337,10 +319,10 @@ public static class Common
             env = GameEnvironment.Typical.Builder<IStarfieldMod, IStarfieldModGetter>(GameRelease.Starfield)
                 .WithTargetDataFolder(GameLocations.GetDataFolder(GameRelease.Starfield))
                 .WithLoadOrder(GetLoadOrder())
-                .WithOutputMod(mod)
+                .WithOutputMod(currentMod)
                 .Build();
         }
-       
+        
         linkCache = env.LoadOrder.ToImmutableLinkCache();
 
         AddBiomeData();
@@ -562,7 +544,7 @@ public partial class StarsystemView : ObservableObject
         {
             if (Common.starListIsEditable[index])
             {
-                var star = Common.mod.Stars.FirstOrDefault(x => x.EditorID == Common.starList[index]);
+                var star = Common.currentMod.Stars.FirstOrDefault(x => x.EditorID == Common.starList[index]);
                 if (star != null) { Value = new StarInfo(star); }
             }
             else
@@ -616,7 +598,7 @@ public partial class StarsystemView : ObservableObject
 public partial class EditableLoadOrderMod : ObservableObject
 {
     [ObservableProperty]
-    private object _loadOrderMod;
+    IStarfieldModGetter _loadOrderMod;
     
     [ObservableProperty]
     private string _loadOrderModName;

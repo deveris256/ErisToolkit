@@ -45,7 +45,7 @@
 					<Grid ColumnDefinitions="350,440,350" RowDefinitions="100,Auto,Auto,Auto,Auto" Margin="20,30,0,0" x:Name="grid">
 						<StackPanel Grid.Row="0" Grid.Column="1">
 							<TextBlock Text="" x:Name="fileName" FontWeight="Bold" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="8,0,8,0" TextWrapping="Wrap"/>
-							<TextBlock Text="" x:Name="esmName" FontWeight="Bold" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="8,0,8,0" TextWrapping="Wrap"/>
+							<TextBlock Text="{Binding ModName}" FontWeight="Bold" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="8,0,8,0" TextWrapping="Wrap"/>
 						</StackPanel>
 
 						<Border Grid.Row="2" Grid.Column="0" Background="#ff21262b" CornerRadius="20" Padding="5">
