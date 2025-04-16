@@ -9,6 +9,7 @@ using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Plugins.Order;
+using System.Collections.ObjectModel;
 
 namespace ErisToolkit.Common;
 
@@ -106,6 +107,12 @@ public static class Utils
         bitmapTmp.UnlockBits(bitmapdata);
         bitmapTmp.Dispose();
         return bitmap1;
+    }
+
+    public static bool IsObservableCollection(Type type)
+    {
+        return type.IsGenericType &&
+               type.GetGenericTypeDefinition() == typeof(ObservableCollection<>);
     }
 }
 

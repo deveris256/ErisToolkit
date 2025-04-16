@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mutagen.Bethesda.Plugins;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace ErisToolkit.Planet.ViewModels;
 public class StarProp<T> : INotifyPropertyChanged
 {
     private T? _value;
-    public object? HiddenValue;
+    public FormKey? HiddenValue;
 
     private string Value
     {
@@ -19,7 +20,7 @@ public class StarProp<T> : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public StarProp(T? value, object? hiddenValue = null)
+    public StarProp(T? value, FormKey? hiddenValue = null)
     {
         SetValue(value);
         HiddenValue = hiddenValue;

@@ -1,5 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using ErisToolkit.Common;
+using Microsoft.VisualBasic;
 using Mutagen.Bethesda.Starfield;
+using Noggog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -42,41 +45,55 @@ public partial class StarsystemView : ObservableObject
             }
         }
 
-        GenerateProperties();
+        GenerateProperties(Children);
     }
 
-    private void GenerateProperties()
+    private void GenerateProperties(ObservableCollection<StarsystemView> children)
     {
-        try
-        {
-            if (Value.GetType().IsPrimitive || Value is string)
-                return;
+        if (Value == null || Value.GetType().IsPrimitive || Value is string)
+            return;
 
-            foreach (var prop in Value.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        foreach (var prop in Value.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        {
+            if (prop.GetIndexParameters().Length > 0 || !prop.CanRead) { continue; }
+            if (prop.Name == "Name" || prop.Name == "Value" || prop.Name == "Count") { continue; }
+            if (prop.Name.ToLower().Contains("mutagen")) { continue; }
+
+
+            string name = "";
+
+            if (prop.Name != prop.GetType().Name)
             {
-                if (prop.GetIndexParameters().Length > 0 || !prop.CanRead)
-                    continue;
-
-                if (prop.Name == "Name" || prop.Name == "Value")
-                {
-                    continue;
-                }
-
-                var propValue = prop.GetValue(Value) ?? "";
-
-                var childNode = new StarsystemView(
-                    name: prop.Name,
-                    value: propValue,
-                    index: -1,
-                    isRootNode: false
-                );
-
-                Children.Add(childNode);
+                name = prop.Name;
             }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error generating properties: {ex}");
+
+            dynamic propValue = prop.GetValue(Value) ?? "";
+
+            var childNode = new StarsystemView(
+                name: name,
+                value: propValue,
+                index: -1,
+                isRootNode: false
+            );
+
+            if (propValue != null && Utils.IsObservableCollection(propValue?.GetType()))
+            {
+                foreach (var item in propValue)
+                {
+                    if (item.GetType() == typeof(ObservableObject)) { continue; }
+
+                    var subItemNode = new StarsystemView(
+                        name: $"[{propValue.IndexOf(item) ?? '?'}]",
+                        value: item ?? "",
+                        index: -1,
+                        isRootNode: false
+                    );
+                    //subItemNode.GenerateProperties(subItemNode.Children);
+                    childNode.Children.Add(subItemNode);
+                }
+            }
+
+            children.Add(childNode);
         }
     }
 }

@@ -1,30 +1,19 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Media;
-using Avalonia.Media.Imaging;
-using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using ErisToolkit.Common;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
 using ReactiveUI;
 using System.Reactive;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
-using Mutagen.Bethesda.Starfield;
 using ErisToolkit.Common.GameData;
 using System.IO;
 using System.Collections.ObjectModel;
-using Reloaded.Memory.Pointers;
 using CommunityToolkit.Mvvm.ComponentModel;
-using System.ComponentModel;
-using Avalonia.Styling;
 using Avalonia.Input;
 using Noggog;
-using System.Linq;
-using System.Xml.Linq;
 using DynamicData;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Threading;
@@ -94,7 +83,11 @@ public partial class MainWindowViewModel : ObservableObject, IScreen
                                 ItemsSource = Enum.GetValues(e.GetType()),
                                 SelectedItem = e
                             },
-                            _ => new TextBlock { Text = node?.Value?.ToString() }
+                            _ => new TextBlock
+                            {
+                                Text = node?.Value?.ToString() == node?.Value?.GetType().ToString() ?
+                                "" : node?.Value?.ToString()
+                            }
                         };
                     })
                 )

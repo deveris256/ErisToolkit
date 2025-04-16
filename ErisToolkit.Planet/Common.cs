@@ -46,6 +46,8 @@ public static class Common
 
     public static IGameEnvironment<IStarfieldMod, IStarfieldModGetter>? env;
 
+    public static List<IKeywordGetter> starClasses = new();
+
     public static IStarfieldMod? currentMod {
         get
         {
@@ -328,6 +330,21 @@ public static class Common
         AddBiomeData();
         AddResourceData();
         PopulateStarList();
+
+        ResolveStarClasses();
+    }
+
+    public static void ResolveStarClasses()
+    {
+        starClasses.Clear();
+
+        foreach (var starClass in KnownGameData.StarTypes)
+        {
+            if (linkCache.TryResolve<IKeywordGetter>(starClass, out var sc))
+            {
+                starClasses.Add(sc);
+            }
+        }
     }
 
     public static void PopulateStarList()
