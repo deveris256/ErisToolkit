@@ -30,6 +30,7 @@ using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Threading;
 using Avalonia.Controls.Templates;
 using System.Collections.Specialized;
+using ErisToolkit.Planet.ViewModels;
 
 namespace ErisToolkit.Planet;
 
