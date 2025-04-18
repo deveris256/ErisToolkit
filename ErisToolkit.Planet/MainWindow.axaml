@@ -157,8 +157,9 @@
 												</DataTemplate>
 											</ItemsControl.ItemTemplate>
 										</ItemsControl>
-										
+
 										<Border Grid.Column="1" Grid.Row="0" Classes="FieldGroupCompact" Width="270">
+											<ScrollViewer Height="500">
 											<StackPanel>
 												<!--Fields-->
 												<TextBlock Text="Biomes" Classes="h2Center"/>
@@ -205,10 +206,13 @@
 														</DataGridTemplateColumn>
 													</DataGrid.Columns>
 												</DataGrid>
-												
+
 												<!--Resources Data Grid-->
 												<TextBlock Text="Resources" Classes="h2Center"/>
 
+												<ScrollViewer>
+
+												</ScrollViewer>
 												<DataGrid Grid.Column="0" ItemsSource="{Binding ResourcesList}"
 													AutoGenerateColumns="False"
 													GridLinesVisibility="None">
@@ -251,9 +255,10 @@
 													</DataGrid.Columns>
 
 												</DataGrid>
-												
+
 											</StackPanel>
-											
+											</ScrollViewer>
+
 										</Border>
 									</Grid>
 								</StackPanel>
