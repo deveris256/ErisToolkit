@@ -31,6 +31,7 @@ public static class Utils
         "Starfield.esm",
         "BlueprintShips-Starfield.esm",
         "ShatteredSpace.esm",
+        "Constellation.esm",
         "SFBGS003.esm",
         "SFBGS004.esm",
         "SFBGS005.esm",
@@ -57,9 +58,8 @@ public static class Utils
 
     /*
      * Loads a read-only mod
-     * TODO: Utilize groupMask for faster load
      */
-    public static IStarfieldModGetter? LoadModReadOnly(string pluginFile, GroupMask groupMask = null)
+    public static IStarfieldModGetter? LoadModReadOnly(string pluginFile)
     {
         try
         { 
@@ -72,6 +72,9 @@ public static class Utils
         } catch (Exception) { return null;  }
     }
 
+    /*
+     * Loads mod as editable
+     */
     public static IStarfieldMod LoadModEditable(string pluginFile, LoadOrder<IStarfieldModGetter> loadOrder)
     {
         IStarfieldMod mod = StarfieldMod.Create(StarfieldRelease.Starfield)
@@ -85,7 +88,7 @@ public static class Utils
 
     // Conversion to Avalonia bitmap
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "<Pending>")]
-    public static WriteableBitmap? ConvertToAvaloniaBitmap(this Image bitmap)
+    public static WriteableBitmap? ConvertToAvaloniaBitmap(Image bitmap)
     {
         if (bitmap == null)
             return null;
@@ -113,57 +116,5 @@ public static class Utils
     {
         return type.IsGenericType &&
                type.GetGenericTypeDefinition() == typeof(ObservableCollection<>);
-    }
-}
-
-/*
- * An image palette data class. Currently, used in
- * (planet_data)<->(bitmap) pipeline.
- * 
- * Each planet data value corresponds to a color at the
- * index of the palette.
- */
-public class Palette
-{
-    public Dictionary<int, List<int>> paletteData = new();
-
-    public Palette(string json)
-    {
-        var col = JsonConvert.DeserializeObject<Dictionary<string, List<List<int>>>>(json);
-        var colors = col["palette"];
-
-        for (int i = 0; i < colors.Count; i++)
-        {
-            paletteData[i] = [colors[i][0], colors[i][1], colors[i][2]];
-        }
-    }
-}
-
-/*
- * Helper class for Avalonia DataGrid
- */
-public partial class BiomDataList : ObservableObject
-{
-    public uint RawID { get; set; }
-
-    [ObservableProperty]
-    private string _iD;
-
-    [ObservableProperty]
-    private string _rawIDString;
-
-    [ObservableProperty]
-    private string _name;
-
-    [ObservableProperty]
-    private IBrush _buttonColor;
-
-    public BiomDataList(uint id, string name, Avalonia.Media.SolidColorBrush col)
-    {
-        RawID = id;
-        RawIDString = id.ToString();
-        ID = $"{id:x6}";
-        Name = name;
-        ButtonColor = col;
     }
 }

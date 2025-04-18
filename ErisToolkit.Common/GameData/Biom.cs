@@ -1,8 +1,5 @@
 ﻿using System.Runtime.InteropServices;
 using System.Drawing;
-using Newtonsoft.Json;
-using Mutagen.Bethesda.Starfield;
-using Noggog;
 
 namespace ErisToolkit.Common.GameData;
 
@@ -21,7 +18,7 @@ namespace ErisToolkit.Common.GameData;
 
 public class Biom
 {
-    public static Palette palette;
+    public static BiomPalette palette;
 
     public static int[] known_resource_ids = [8, 88, 0, 80, 1, 81, 2, 82, 3, 83, 4, 84];
     public static readonly uint[] gridSize = { 0x100, 0x100 };
@@ -76,6 +73,13 @@ public class Biom
 
             writer.Close();
         }
+    }
+
+    public enum BiomDataSide
+    {
+        N,
+        S,
+        NULL
     }
 
     public Biom(string filePath)
@@ -135,7 +139,7 @@ public class Biom
 
     public static void LoadPalette()
     {
-        palette = new Palette(Properties.Resources.palette1);
+        palette = new BiomPalette(Properties.Resources.palette1);
     }
 
     public System.Drawing.Bitmap GetBiomeImage(uint[] grid)
@@ -186,14 +190,14 @@ public class Biom
         return bitmap;
     }
 
-    public bool LoadBiomeImage(System.Drawing.Bitmap bitmap, int biomGridIndex)
+    public bool LoadBiomeImage(System.Drawing.Bitmap bitmap, BiomDataSide side)
     {
         UInt32[] biomGrid;
 
-        switch (biomGridIndex)
+        switch (side)
         {
-            case 0: biomGrid = biomStruct.BiomeGridN; break;
-            case 1: biomGrid = biomStruct.BiomeGridS; break;
+            case BiomDataSide.N: biomGrid = biomStruct.BiomeGridN; break;
+            case BiomDataSide.S: biomGrid = biomStruct.BiomeGridS; break;
             default: return false;
         }
         if (bitmap.Size.Width != (int)gridSize[0] || bitmap.Size.Height != (int)gridSize[1])
@@ -231,14 +235,14 @@ public class Biom
         return true;
     }
 
-    public bool LoadResourceImage(System.Drawing.Bitmap bitmap, int resGridIndex)
+    public bool LoadResourceImage(System.Drawing.Bitmap bitmap, BiomDataSide side)
     {
         byte[] resGrid;
 
-        switch (resGridIndex)
+        switch (side)
         {
-            case 0: resGrid = biomStruct.ResrcGridN; break;
-            case 1: resGrid = biomStruct.ResrcGridS; break;
+            case BiomDataSide.N: resGrid = biomStruct.ResrcGridN; break;
+            case BiomDataSide.S: resGrid = biomStruct.ResrcGridS; break;
             default: return false;
         }
         if (bitmap.Size.Width != (int)gridSize[0] || bitmap.Size.Height != (int)gridSize[1])

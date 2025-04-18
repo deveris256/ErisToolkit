@@ -1,169 +1,38 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using DynamicData;
 using Mutagen.Bethesda.Starfield;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
+using System.ComponentModel;
 
 namespace ErisToolkit.Planet.ViewModels;
 
-public partial class pPlanetModelComponentSubItem : ObservableObject
+public partial class StarInfo : ObservableObject, INotifyPropertyChanged
 {
-    [ObservableProperty]
-    string _name;
-    [ObservableProperty]
-    string _value;
-
-    IPlanetModelComponentXMPMSubItemGetter SubItem;
+    private bool customEditorID = false;
+    private bool editable = false;
 
     [ObservableProperty]
-    StarProp<string?> _ResourceID;
-    [ObservableProperty]
-    StarProp<string?> _File;
-    [ObservableProperty]
-    StarProp<string?> _Extension;
-    [ObservableProperty]
-    StarProp<string?> _Folder;
+    private string _editorID;
 
-    public pPlanetModelComponentSubItem(IPlanetModelComponentXMPMSubItemGetter subItem)
+    private string? _name;
+    private string? Name
     {
-        SubItem = subItem;
-        ResourceID = new(subItem.ResourceID);
-        File = new(BitConverter.ToString(BitConverter.GetBytes(subItem.FileHash)).Replace("-", "").ToLower());
-        Extension = new(subItem.Extension);
-        Folder = new(BitConverter.ToString(BitConverter.GetBytes(subItem.FolderHash)).Replace("-", "").ToLower());
-    }
+        get => _name;
+        set {
+            _name = value;
 
-    public string GetValue() { return ""; }
-    public override string ToString() { return ""; }
-}
-
-public partial class pPlanetModelComponent : ObservableObject
-{
-    [ObservableProperty]
-    string _name;
-    [ObservableProperty]
-    string _value;
-
-    [ObservableProperty]
-    public StarProp<string?> _StarModel;
-    [ObservableProperty]
-    public ObservableCollection<pPlanetModelComponentSubItem> _SubItems;
-    [ObservableProperty]
-    public ObservableCollection<string> _StrSubItems;
-
-    public pPlanetModelComponent(IPlanetModelComponentGetter planetModelComp)
-    {
-        SubItems = new();
-        StrSubItems = new();
-
-        StarModel = new(planetModelComp.Model?.File?.ToString() ?? "");
-        
-        if (planetModelComp.XMPM != null)
-        {
-            if (planetModelComp.XMPM.UnknownSubItems != null)
+            if (customEditorID)
             {
-                foreach (var sub in planetModelComp.XMPM.UnknownSubItems)
-                {
-                    SubItems.Add(new(sub));
-                }
+                EditorID = $"{_name?.Replace(" ", "")}Star";
+                OnSpecialPropertyChanged(nameof(EditorID));
             }
+
+            OnSpecialPropertyChanged(nameof(Name));
+            
         }
-        
-    }
-}
-
-public partial class pOrbitedDataComponent : ObservableObject
-{
-    [ObservableProperty]
-    string _name;
-    [ObservableProperty]
-    string _value;
-
-    [ObservableProperty]
-    public StarProp<ulong?> _GravityWell;
-    [ObservableProperty]
-    public StarProp<float?> _SurfaceGravity;
-    [ObservableProperty]
-    public StarProp<float?> _MassInSM;
-    [ObservableProperty]
-    public StarProp<float?> _RadiusInKM;
-
-    public pOrbitedDataComponent(IOrbitedDataComponentGetter orbitedComp)
-    {
-        GravityWell = new(orbitedComp.Unknown1, null);
-        SurfaceGravity = new(orbitedComp.Unknown2, null);
-        RadiusInKM = new(orbitedComp.RadiusInKm, null);
-        MassInSM = new(orbitedComp.MassInSm, null);
-
-        Name = "";
-        Value = "";
     }
 
-    public string GetValue() { return ""; }
-    public override string ToString() { return ""; }
-}
-
-public partial class pStarDataComponent : ObservableObject
-{
     [ObservableProperty]
-    string _name;
-    [ObservableProperty]
-    string _value;
-
-    [ObservableProperty]
-    public StarProp<string?> _CatalogueId;
-    [ObservableProperty]
-    public StarProp<string?> _SpectralClass;
-    [ObservableProperty]
-    public StarProp<float?> _Magnitude;
-    [ObservableProperty]
-    public StarProp<float?> _InnerHabitableZone;
-    [ObservableProperty]
-    public StarProp<float?> _OuterHabitableZone;
-    [ObservableProperty]
-    public StarProp<uint?> _HIP;
-    [ObservableProperty]
-    public StarProp<uint?> _Radius;
-    [ObservableProperty]
-    public StarProp<uint?> _TemperatureInK;
-
-    public pStarDataComponent(IStarDataComponentGetter stardataComp)
-    {
-        CatalogueId = new(stardataComp.CatalogueId, null);
-        SpectralClass = new(stardataComp.SpectralClass, null);
-        Magnitude = new(stardataComp.Magnitude, null);
-        InnerHabitableZone = new(stardataComp.InnerHabitableZone, null);
-        OuterHabitableZone = new(stardataComp.OuterHabitableZone, null);
-        HIP = new(stardataComp.HIP, null);
-        Radius = new(stardataComp.Radius, null);
-        TemperatureInK = new(stardataComp.TemperatureInK, null);
-
-        Name = "";
-        Value = "";
-    }
-
-    public string GetValue() { return ""; }
-    public override string ToString() { return ""; }
-}
-
-public partial class StarInfo : ObservableObject
-{
-    IStarfieldMod? mod; // If it's editable
-    IStarGetter star;
-
-    [ObservableProperty]
-    private StarProp<string?> _EditorID;
-
-    [ObservableProperty]
-    private StarProp<string?> _Name;
-
-    [ObservableProperty]
-    private StarProp<int?> _ID;
+    private StarProp<int?> _StarID;
 
     [ObservableProperty]
     private CoordsXYZ _systemParsecLocation;
@@ -176,7 +45,7 @@ public partial class StarInfo : ObservableObject
 
     // Orbited Data Component
     [ObservableProperty]
-    public pOrbitedDataComponent? _StarOrbitedDataComponent;
+    public OrbitedDataInfo? _StarOrbitedDataComponent;
 
     // Star Data Component
     [ObservableProperty]
@@ -184,25 +53,29 @@ public partial class StarInfo : ObservableObject
 
     // Planet Model Component
     [ObservableProperty]
-    public pPlanetModelComponent? _StarModelComponent;
+    public PlanetModelInfo? _StarModelComponent;
 
-    public StarInfo(IStarGetter star, IStarfieldMod? starMod = null) {
+    public event PropertyChangedEventHandler? SpecialPropertyChanged;
+
+    public StarInfo(IStarGetter star) {
         LoadStarsystemData(star);
-        mod = starMod;
     }
-    public StarInfo(Star star, IStarfieldMod? starMod = null)
+    public StarInfo(Star star)
     {
         LoadStarsystemData(star);
-        mod = starMod;
+        editable = true;
+    }
+
+    protected virtual void OnSpecialPropertyChanged(string propertyName)
+    {
+        SpecialPropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     public void LoadStarsystemData<T>(T star) where T : IStarGetter
     {
-        this.star = star;
-
-        Name = new StarProp<string?>(star.Name);
-        EditorID = new StarProp<string?>(star.EditorID);
-        ID = new StarProp<int?>((int?)star.ID);
+        Name = star.Name;
+        EditorID = star.EditorID ?? "";
+        StarID = new StarProp<int?>((int?)star.ID);
 
         SystemParsecLocation = new CoordsXYZ(
             star.BNAM == null ? null : star.BNAM.Value.X,
@@ -250,10 +123,7 @@ public partial class StarInfo : ObservableObject
                 //planetModelComp.XMPM.UnknownSubItems
             }
         }
-    }
 
-    public override string ToString()
-    {
-        return "";
+        customEditorID = true;
     }
 }
