@@ -13,6 +13,9 @@ namespace ErisToolkit.Planet.ViewModels;
 public partial class BiomInfo : ObservableObject, INotifyPropertyChanged
 {
     [ObservableProperty]
+    private BiomDataList? _SelectedBiomDataListItem;
+
+    [ObservableProperty]
     string _FileName;
 
     [ObservableProperty]
@@ -43,6 +46,19 @@ public partial class BiomInfo : ObservableObject, INotifyPropertyChanged
         FileName = Path.GetFileName(path);
 
         SetBiom(new(path));
+    }
+
+    public void RemoveBiome(int index)
+    {
+        BiomData.RemoveBiome(index);
+        AddBiomeData();
+    }
+
+    //TODO
+    public void AddBiome(uint id)
+    {
+        BiomData.AddBiome(id);
+        AddBiomeData();
     }
 
     /* Used in loading images from biom struct of

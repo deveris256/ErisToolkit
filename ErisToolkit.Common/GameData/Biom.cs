@@ -1,5 +1,8 @@
 ﻿using System.Runtime.InteropServices;
 using System.Drawing;
+using DynamicData;
+using Mutagen.Bethesda.Starfield;
+using System.Reflection.PortableExecutable;
 
 namespace ErisToolkit.Common.GameData;
 
@@ -140,6 +143,23 @@ public class Biom
     public static void LoadPalette()
     {
         palette = new BiomPalette(Properties.Resources.palette1);
+    }
+
+    //TODO
+    public void AddBiome(UInt32 biomeID)
+    {
+        biomStruct.NumBiomes += 1;
+        var list = biomStruct.BiomeIds.ToList();
+        list.Add(biomeID);
+        biomStruct.BiomeIds = list.ToArray();
+    }
+
+    public void RemoveBiome(int index)
+    {
+        biomStruct.NumBiomes -= 1;
+        var list = biomStruct.BiomeIds.ToList();
+        list.RemoveAt(index);
+        biomStruct.BiomeIds = list.ToArray();
     }
 
     public System.Drawing.Bitmap GetBiomeImage(uint[] grid)

@@ -80,6 +80,34 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     }
 
     /*
+     * Adjusting the .biom list
+     */
+    private void OnBiomDataListKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Avalonia.Input.Key.Delete)
+        {
+            var biom = ((MainWindowViewModel)DataContext).BiomFileInfo;
+            if (biom == null) { return; }
+
+            var selData = biom.SelectedBiomDataListItem;
+            if (selData == null) { return; }
+
+            if (biom.BiomesList.Contains(selData))
+            {
+                var index = biom.BiomesList.IndexOf(selData);
+                ((MainWindowViewModel)DataContext).BiomFileInfo.RemoveBiome(index);
+            }
+            else if (biom.ResourcesList.Contains(selData))
+            {
+                // TODO
+                //var index = biom.ResourcesList.IndexOf(selData);
+                //((MainWindowViewModel)DataContext).BiomFileInfo.RemoveResource(index);
+            }
+        }
+        e.Handled = true;
+    }
+
+    /*
      * If Enter key is pressed in the star search,
      * attempt to load the star into UI.
      */

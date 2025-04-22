@@ -167,7 +167,9 @@
 												<!--Biomes Data Grid-->
 												<DataGrid Grid.Column="0" ItemsSource="{Binding BiomesList}"
 													AutoGenerateColumns="False"
-													GridLinesVisibility="None">
+													GridLinesVisibility="None"
+													SelectedItem="{Binding SelectedBiomDataListItem, Mode=TwoWay}"
+													KeyDown="OnBiomDataListKeyDown">
 
 													<DataGrid.Columns>
 														<DataGridTemplateColumn Header="Color" Width="60">
@@ -215,7 +217,9 @@
 												</ScrollViewer>
 												<DataGrid Grid.Column="0" ItemsSource="{Binding ResourcesList}"
 													AutoGenerateColumns="False"
-													GridLinesVisibility="None">
+													GridLinesVisibility="None"
+													SelectedItem="{Binding SelectedBiomDataListItem, Mode=TwoWay}"
+													KeyDown="OnBiomDataListKeyDown">
 
 													<DataGrid.Columns>
 														<DataGridTemplateColumn Header="Color" Width="60">
