@@ -84,25 +84,19 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
      */
     private void OnBiomDataListKeyDown(object sender, KeyEventArgs e)
     {
-        if (e.Key == Avalonia.Input.Key.Delete)
+        var biom = ((MainWindowViewModel)DataContext).BiomFileInfo;
+        if (biom == null) { return; }
+
+        var selData = biom.SelectedBiomDataListItem;
+        if (selData == null) { return; }
+
+        else if (biom.BiomesList.Contains(selData))
         {
-            var biom = ((MainWindowViewModel)DataContext).BiomFileInfo;
-            if (biom == null) { return; }
-
-            var selData = biom.SelectedBiomDataListItem;
-            if (selData == null) { return; }
-
-            if (biom.BiomesList.Contains(selData))
-            {
-                var index = biom.BiomesList.IndexOf(selData);
-                ((MainWindowViewModel)DataContext).BiomFileInfo.RemoveBiome(index);
-            }
-            else if (biom.ResourcesList.Contains(selData))
-            {
-                // TODO
-                //var index = biom.ResourcesList.IndexOf(selData);
-                //((MainWindowViewModel)DataContext).BiomFileInfo.RemoveResource(index);
-            }
+            int biomDataIndex = biom.BiomesList.IndexOf(selData);
+        }
+        else if (biom.ResourcesList.Contains(selData))
+        {
+            int resDataIndex = biom.ResourcesList.IndexOf(selData);
         }
         e.Handled = true;
     }
