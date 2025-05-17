@@ -191,6 +191,7 @@
 															<DataGridTemplateColumn.CellTemplate>
 																<DataTemplate>
 																	<StackPanel>
+																		<TextBlock Text="⚠" Foreground="Red" IsVisible="{Binding !Assigned}" ToolTip.Tip="You are be unable to save the biom file until you assign the ID."/>
 																		<TextBlock Text="{Binding ID}" Padding="5"/>
 																	</StackPanel>
 																</DataTemplate>
