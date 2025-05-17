@@ -15,6 +15,8 @@ using Newtonsoft.Json;
 using Noggog;
 using DynamicData;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform.Storage;
+using Avalonia.Controls;
 
 namespace ErisToolkit.Planet.ViewModels;
 
@@ -65,6 +67,32 @@ public partial class BiomInfo : ObservableObject, INotifyPropertyChanged
         AddBiomeData();
     }
 
+    public async void SaveBiomFile(TopLevel topLevel)
+    {
+        var biomesUnassigned = BiomesList.Select(x => x.Assigned == false);
+        var resourcesUnassigned = ResourcesList.Where(x => x.Assigned == false);
+
+        if (biomesUnassigned.Count() + resourcesUnassigned.Count() != 0)
+        {
+            // For now, return. Later - notify the user on the
+            // notifications panel. TODO
+            return;
+        }
+
+        var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            Title = "Save .Biom File",
+            DefaultExtension = "biom"
+        });
+
+        if (file != null)
+        {
+            await using var stream = await file.OpenWriteAsync();
+            using var writer = new BinaryWriter(stream);
+            BiomData.biomStruct.Write(writer);
+        }
+    }
+
     /*
      * Gathers biome data from an image, loading unique
      * colors as data items.
@@ -113,7 +141,7 @@ public partial class BiomInfo : ObservableObject, INotifyPropertyChanged
                     tempId -= 1;
                 }
                 BiomData.AddBiome(tempId);
-                BiomesList.Add(new(null, tempId, pixel, BiomDataList.DataTypes.Biome));
+                BiomesList.Add(new(null, tempId, pixel, BiomDataList.DataTypes.Biome, false));
             }
 
             biomGrid[i] = (uint)BiomesList.Where(x => x.Color == pixel).First().Data;
@@ -206,7 +234,7 @@ public partial class BiomInfo : ObservableObject, INotifyPropertyChanged
                 {
                     tempId -= 1;
                 }
-                ResourcesList.Add(new(null, tempId, pixel, BiomDataList.DataTypes.Resource));
+                ResourcesList.Add(new(null, tempId, pixel, BiomDataList.DataTypes.Resource, false));
             }
 
             resGrid[i] = (byte)ResourcesList.Where(x => x.Color == pixel).First().Data;

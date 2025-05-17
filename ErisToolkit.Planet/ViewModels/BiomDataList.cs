@@ -27,6 +27,9 @@ public partial class BiomDataList : ObservableObject
     [ObservableProperty]
     private DataTypes _dataType;
 
+    [ObservableProperty]
+    private bool _Assigned;
+
     public dynamic Data;
 
     public enum DataTypes
@@ -36,7 +39,7 @@ public partial class BiomDataList : ObservableObject
         Resource
     }
 
-    public BiomDataList(IBiomeGetter? biomeForm, dynamic data, System.Drawing.Color col, DataTypes dataType)
+    public BiomDataList(IBiomeGetter? biomeForm, dynamic data, System.Drawing.Color col, DataTypes dataType, bool assigned = true)
     {
         Data = data;
 
@@ -62,5 +65,7 @@ public partial class BiomDataList : ObservableObject
         Brush = new Avalonia.Media.SolidColorBrush(new Avalonia.Media.Color(255, col.R, col.G, col.B));
 
         DataType = dataType;
+
+        Assigned = assigned;
     }
 }

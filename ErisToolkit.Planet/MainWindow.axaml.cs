@@ -216,19 +216,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 
         var topLevel = GetTopLevel(this);
 
-        var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
-        {
-            Title = "Save .Biom File",
-            DefaultExtension = "biom"
-        });
-
-        if (file != null)
-        {
-            await using var stream = await file.OpenWriteAsync();
-            using var writer = new BinaryWriter(stream);
-
-            biom.BiomData.biomStruct.Write(writer);
-        }
+        ((MainWindowViewModel)DataContext).BiomFileInfo.SaveBiomFile(topLevel);
     }
 
     /*
