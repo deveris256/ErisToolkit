@@ -1,6 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,18 +17,14 @@ namespace ErisToolkit.Common.GameData;
  * index of the palette.
  */
 
-public class BiomPalette
+public partial class BiomPaletteItem<T> : ObservableObject
 {
-    public Dictionary<int, List<int>> paletteData = new();
+    [ObservableProperty] public Color _Color;
+    [ObservableProperty] public T _Data;
 
-    public BiomPalette(string json)
+    public BiomPaletteItem(Color color, T data)
     {
-        var col = JsonConvert.DeserializeObject<Dictionary<string, List<List<int>>>>(json);
-        var colors = col["palette"];
-
-        for (int i = 0; i < colors.Count; i++)
-        {
-            paletteData[i] = [colors[i][0], colors[i][1], colors[i][2]];
-        }
+        Color = color;
+        Data = data;
     }
 }

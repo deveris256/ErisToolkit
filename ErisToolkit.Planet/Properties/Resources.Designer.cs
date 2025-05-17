@@ -59,5 +59,15 @@ namespace ErisToolkit.Planet.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {&apos;palette&apos;: [[172, 194, 217], [252, 252, 129], [55, 120, 191], [8, 120, 127], [152, 63, 178], [67, 5, 65], [201, 209, 121], [5, 73, 7], [255, 243, 154], [44, 250, 31], [183, 82, 3], [78, 253, 84], [252, 246, 121], [19, 187, 175], [1, 192, 141], [127, 104, 78], [35, 196, 139], [249, 188, 8], [86, 252, 162], [126, 160, 122], [252, 134, 170], 
+        ///[254, 66, 15], [169, 3, 8], [78, 81, 139], [241, 243, 63], [166, 251, 178], [191, 172, 5], [250, 254, 75], [255, 249, 208], [189, 246, 254], [243, 97, 150], [123, 253,  [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string palette1 {
+            get {
+                return ResourceManager.GetString("palette1", resourceCulture);
+            }
+        }
     }
 }

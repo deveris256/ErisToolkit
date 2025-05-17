@@ -58,8 +58,6 @@ public static class Common
     public static ObservableCollection<string> starList = new();
     public static List<bool> starListIsEditable = new();
 
-    public static BiomPalette? palette;
-
     public static int StringToIndex(string str)
     {
         switch (str.ToLower())

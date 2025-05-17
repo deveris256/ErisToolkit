@@ -74,8 +74,6 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         AvaloniaXamlLoader.Load(this);
         InitializeComponent();
 
-        Biom.LoadPalette();
-
         DataContext = viewModel;
     }
 
@@ -325,23 +323,18 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 
         if (files.Count == 0) { return; }
 
-        System.Drawing.Bitmap loadedBitmap = new(files[0].Path.AbsolutePath);
+        var absPath = files[0].Path.AbsolutePath.Replace("%20", " ");
+        System.Drawing.Bitmap loadedBitmap = new(absPath);
 
         if (loadedBitmap == null) { return; }
 
         switch (imgType)
         {
             case "biome":
-                ((MainWindowViewModel)DataContext).BiomFileInfo.BiomData.LoadBiomeImage(loadedBitmap, imgSide);
-                ((MainWindowViewModel)DataContext).BiomFileInfo.LoadImages();
-                ((MainWindowViewModel)DataContext).BiomFileInfo.AddBiomeData();
-                ((MainWindowViewModel)DataContext).BiomFileInfo.AddResourceData();
+                ((MainWindowViewModel)DataContext).BiomFileInfo.GatherBiomeDataFromImage(loadedBitmap, imgSide);
                 break;
             case "res":
-                ((MainWindowViewModel)DataContext).BiomFileInfo.BiomData.LoadResourceImage(loadedBitmap, imgSide);
-                ((MainWindowViewModel)DataContext).BiomFileInfo.LoadImages();
-                ((MainWindowViewModel)DataContext).BiomFileInfo.AddBiomeData();
-                ((MainWindowViewModel)DataContext).BiomFileInfo.AddResourceData();
+                ((MainWindowViewModel)DataContext).BiomFileInfo.GatherResourceDataFromImage(loadedBitmap, imgSide);
                 break;
         }
     }

@@ -7,13 +7,23 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Collections.ObjectModel;
+using static ErisToolkit.Common.GameData.Biom;
+using System.Drawing.Imaging;
+using System.Drawing;
+using System.Linq;
+using Newtonsoft.Json;
+using Noggog;
+using DynamicData;
+using Avalonia.Media.Imaging;
 
 namespace ErisToolkit.Planet.ViewModels;
 
 public partial class BiomInfo : ObservableObject, INotifyPropertyChanged
 {
+    private List<List<int>> DefaultPalette;
+
     [ObservableProperty]
-    private BiomDataList? _SelectedBiomDataListItem;
+    private object _SelectedBiomDataListItem;
 
     [ObservableProperty]
     string _FileName;
@@ -43,6 +53,7 @@ public partial class BiomInfo : ObservableObject, INotifyPropertyChanged
 
     public BiomInfo(string path)
     {
+        DefaultPalette = JsonConvert.DeserializeObject<Dictionary<string, List<List<int>>>>(Properties.Resources.palette1)["palette"];
         FileName = Path.GetFileName(path);
 
         SetBiom(new(path));
@@ -52,6 +63,235 @@ public partial class BiomInfo : ObservableObject, INotifyPropertyChanged
     {
         BiomData.RemoveBiome(index);
         AddBiomeData();
+    }
+
+    /*
+     * Gathers biome data from an image, loading unique
+     * colors as data items.
+     */
+    public void GatherBiomeDataFromImage(System.Drawing.Bitmap bitmap, BiomDataSide side)
+    {
+        if (bitmap.Size.Width != (int)gridSize[0] || bitmap.Size.Height != (int)gridSize[1])
+        {
+            return;
+        }
+
+        List<Color> uniqueColors = BiomesList.Select(x => x.Color).ToList();
+        UInt32[] biomGrid;
+
+        switch (side)
+        {
+            case BiomDataSide.N: biomGrid = BiomData.biomStruct.BiomeGridN; break;
+            case BiomDataSide.S: biomGrid = BiomData.biomStruct.BiomeGridS; break;
+            default: return;
+        }
+
+        for (int i = 0; i < gridFlatSize; i++)
+        {
+            int x = i % (int)gridSize[0];
+            int y = i / (int)gridSize[0];
+
+            Color pixel = bitmap.GetPixel(x, y);
+
+            if (!uniqueColors.Contains(pixel))
+            {
+                uniqueColors.Add(pixel);
+            }
+        }
+
+        for (int i = 0; i < gridFlatSize; i++)
+        {
+            int x = i % (int)gridSize[0];
+            int y = i / (int)gridSize[0];
+
+            Color pixel = bitmap.GetPixel(x, y);
+            
+            if (BiomesList.Where(x => x.Color == pixel).Count() == 0) {
+                var tempId = (uint)-uniqueColors.IndexOf(pixel);
+                while (BiomData.biomStruct.BiomeIds.Contains(tempId))
+                {
+                    tempId -= 1;
+                }
+                BiomData.AddBiome(tempId);
+                BiomesList.Add(new(null, tempId, pixel, BiomDataList.DataTypes.Biome));
+            }
+
+            biomGrid[i] = (uint)BiomesList.Where(x => x.Color == pixel).First().Data;
+        }
+
+        BiomData.ReplaceBiomeData(biomGrid, side);
+        CleanUpUnusedBiomeData();
+        LoadImages();
+    }
+
+    public void CleanUpUnusedBiomeData()
+    {
+        var dataN = BiomData.biomStruct.BiomeGridN;
+        var dataS = BiomData.biomStruct.BiomeGridS;
+
+        List<uint> uniqueIDData = new();
+
+        for (int i = 0; i < gridFlatSize; i++)
+        {
+            int x = i % (int)gridSize[0];
+            int y = i / (int)gridSize[0];
+
+            uint data1 = dataN[i];
+            uint data2 = dataS[i];
+
+            if (!uniqueIDData.Contains(data1)) { uniqueIDData.Add(data1); }
+            if (!uniqueIDData.Contains(data2)) { uniqueIDData.Add(data2); }
+        }
+
+        var currentIDs = BiomesList.Select(x => (uint)x.Data).ToList();
+
+        foreach (uint curID in currentIDs)
+        {
+            if (!uniqueIDData.Contains(curID))
+            {
+                int idx = BiomesList.Select(x => (uint)x.Data).ToList().IndexOf(curID);
+                BiomData.RemoveBiome(idx);
+                BiomesList.RemoveAt(idx);
+            }
+        }
+    }
+
+    /*
+     * Gathers resource data from an image, loading unique
+     * colors as data items.
+     */
+    public void GatherResourceDataFromImage(System.Drawing.Bitmap bitmap, BiomDataSide side)
+    {
+        if (bitmap.Size.Width != (int)gridSize[0] || bitmap.Size.Height != (int)gridSize[1])
+        {
+            return;
+        }
+
+        List<Color> uniqueColors = ResourcesList.Select(x => x.Color).ToList();
+        byte[] resGrid;
+
+        switch (side)
+        {
+            case BiomDataSide.N: resGrid = BiomData.biomStruct.ResrcGridN; break;
+            case BiomDataSide.S: resGrid = BiomData.biomStruct.ResrcGridS; break;
+            default: return;
+        }
+
+        for (int i = 0; i < gridFlatSize; i++)
+        {
+            int x = i % (int)gridSize[0];
+            int y = i / (int)gridSize[0];
+
+            Color pixel = bitmap.GetPixel(x, y);
+
+            if (!uniqueColors.Contains(pixel))
+            {
+                uniqueColors.Add(pixel);
+            }
+        }
+
+        for (int i = 0; i < gridFlatSize; i++)
+        {
+            int x = i % (int)gridSize[0];
+            int y = i / (int)gridSize[0];
+
+            Color pixel = bitmap.GetPixel(x, y);
+
+            if (ResourcesList.Where(x => x.Color == pixel).Count() == 0)
+            {
+                var tempId = (byte)-uniqueColors.IndexOf(pixel);
+                var tempIdList = ResourcesList.Select(x => (byte)x.Data);
+
+                while (tempIdList.Contains(tempId))
+                {
+                    tempId -= 1;
+                }
+                ResourcesList.Add(new(null, tempId, pixel, BiomDataList.DataTypes.Resource));
+            }
+
+            resGrid[i] = (byte)ResourcesList.Where(x => x.Color == pixel).First().Data;
+        }
+
+        BiomData.ReplaceResourceData(resGrid, side);
+        CleanUpUnusedResourceData();
+        LoadImages();
+    }
+
+    public void CleanUpUnusedResourceData()
+    {
+        var dataN = BiomData.biomStruct.ResrcGridN;
+        var dataS = BiomData.biomStruct.ResrcGridS;
+
+        List<byte> uniqueIDData = new();
+
+        for (int i = 0; i < gridFlatSize; i++)
+        {
+            int x = i % (int)gridSize[0];
+            int y = i / (int)gridSize[0];
+
+            byte data1 = dataN[i];
+            byte data2 = dataS[i];
+
+            if (!uniqueIDData.Contains(data1)) { uniqueIDData.Add(data1); }
+            if (!uniqueIDData.Contains(data2)) { uniqueIDData.Add(data2); }
+        }
+
+        var currentIDs = ResourcesList.Select(x => (byte)x.Data).ToList();
+
+        foreach (var curID in currentIDs)
+        {
+            if (!uniqueIDData.Contains(curID))
+            {
+                int idx = ResourcesList.Select(x => (byte)x.Data).ToList().IndexOf(curID);
+                ResourcesList.RemoveAt(idx);
+            }
+        }
+    }
+
+    /*
+     * Gets image from biome data grid
+     */
+    public System.Drawing.Bitmap GetBiomeImage(uint[] grid)
+    {
+        System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap((int)gridSize[0], (int)gridSize[1]);
+        Console.WriteLine(BiomesList);
+        for (int i = 0; i < gridFlatSize; i++)
+        {
+            var biomeID = grid[i];
+            var colors = BiomesList.Where(x => (uint)x.Data == biomeID);
+            if (colors.Count() == 0)
+            {
+                string temp = $"Can't find {biomeID} in " + string.Join(",", BiomesList.Select(x => x.ID).ToArray());
+                throw new Exception(temp);
+            }
+            var color = colors.First().Color;
+
+            int x = i % (int)gridSize[0];
+            int y = i / (int)gridSize[0];
+            bitmap.SetPixel(x, y, color);
+        }
+
+        return bitmap;
+    }
+
+    /*
+     * Gets image from resource data grid
+     */
+    public System.Drawing.Bitmap GetResourceImage(byte[] grid)
+    {
+        System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap((int)gridSize[0], (int)gridSize[1]);
+
+        for (int i = 0; i < gridFlatSize; i++)
+        {
+            int resourceID = grid[i];
+            Color color = ResourcesList.Where(x => (byte)x.Data == resourceID).First().Color;
+
+            int x = i % (int)gridSize[0];
+            int y = i / (int)gridSize[0];
+            bitmap.SetPixel(x, y, color);
+        }
+
+        return bitmap;
     }
 
     //TODO
@@ -70,22 +310,22 @@ public partial class BiomInfo : ObservableObject, INotifyPropertyChanged
         ImageButtons.Add(new(
             "biome",
             "Biomes North",
-            BiomData.GetBiomeImage(BiomData.biomStruct.BiomeGridN),
+            GetBiomeImage(BiomData.biomStruct.BiomeGridN),
             Biom.BiomDataSide.N));
         ImageButtons.Add(new(
             "biome",
             "Biomes South",
-            BiomData.GetBiomeImage(BiomData.biomStruct.BiomeGridS),
+            GetBiomeImage(BiomData.biomStruct.BiomeGridS),
             Biom.BiomDataSide.S));
         ImageButtons.Add(new(
             "res",
             "Resources North",
-            BiomData.GetResourceImage(BiomData.biomStruct.ResrcGridN),
+            GetResourceImage(BiomData.biomStruct.ResrcGridN),
             Biom.BiomDataSide.N));
         ImageButtons.Add(new(
             "res",
             "Resources South",
-            BiomData.GetResourceImage(BiomData.biomStruct.ResrcGridS),
+           GetResourceImage(BiomData.biomStruct.ResrcGridS),
             Biom.BiomDataSide.S));
 
     }
@@ -111,31 +351,15 @@ public partial class BiomInfo : ObservableObject, INotifyPropertyChanged
      */
     public void AddBiomeData()
     {
-        BiomesList.Clear();
-
         if (BiomData == null) return;
 
-        List<uint> biomeIds = new();
-
-        // Get all unique biome ids
-        for (int i = 0; i < BiomData.biomStruct.NumBiomes; i++)
-        {
-            var biomeId = BiomData.biomStruct.BiomeIds[i];
-            if (biomeIds.Contains(biomeId)) { continue; }
-
-            biomeIds.Add(biomeId);
-        }
+        var temp = BiomesList.Select(x => (uint)x.Data);
+        List<uint> biomeIds = BiomData.biomStruct.BiomeIds.ToList().Where(x=> !temp.Contains(x)).ToList();
 
         // Map biome IDs
         foreach (var biomeId in biomeIds)
         {
             bool found = false;
-
-            var color = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.FromRgb(
-                        (byte)Biom.palette.paletteData[biomeIds.IndexOf(biomeId)][0],
-                        (byte)Biom.palette.paletteData[biomeIds.IndexOf(biomeId)][1],
-                        (byte)Biom.palette.paletteData[biomeIds.IndexOf(biomeId)][2]
-                ), 1);
 
             foreach (var loMod in Common.LoadOrder.LoadOrder)
             {
@@ -146,7 +370,9 @@ public partial class BiomInfo : ObservableObject, INotifyPropertyChanged
                 {
                     BiomesList.Add(new BiomDataList(
                         formLink,
-                        color
+                        biomeId,
+                        GetDefaultUniqueBiomeColor(biomeId),
+                        BiomDataList.DataTypes.Biome
                     ));
                     found = true;
                     break;
@@ -156,12 +382,47 @@ public partial class BiomInfo : ObservableObject, INotifyPropertyChanged
             // Add dummy if not found
             if (!found)
             {
-                BiomesList.Add(new BiomDataList(
+                BiomesList.Add(new(
+                        null,
                         biomeId,
-                        color
+                        GetDefaultUniqueBiomeColor(biomeId),
+                        BiomDataList.DataTypes.Biome
                     ));
             }
-        }   
+        }
+    }
+
+    public System.Drawing.Color GetDefaultUniqueBiomeColor(uint biomeId)
+    {
+        Color color;
+        int idx = Array.IndexOf(BiomData.biomStruct.BiomeIds, biomeId);
+        color = System.Drawing.Color.FromArgb(255, DefaultPalette[idx][0], DefaultPalette[idx][1], DefaultPalette[idx][2]);
+
+        return color;
+    }
+
+    public System.Drawing.Color GetDefaultUniqueResourceColor(uint resId)
+    {
+        Color color = default;
+        int idx = Array.IndexOf(Biom.known_resource_ids, resId);
+
+        if (idx == -1)
+        {
+            foreach (var colList in DefaultPalette)
+            {
+                color = System.Drawing.Color.FromArgb(255, colList[0], colList[1], colList[2]);
+                if (ResourcesList.Select(x => x.Color).ToList().Contains(color))
+                {
+                    continue;
+                }
+                break;
+            }
+        } else
+        {
+            color = System.Drawing.Color.FromArgb(255, DefaultPalette[idx][0], DefaultPalette[idx][1], DefaultPalette[idx][2]);
+        }
+
+        return color;
     }
 
     /*
@@ -170,45 +431,51 @@ public partial class BiomInfo : ObservableObject, INotifyPropertyChanged
      */
     public void AddResourceData()
     {
-        ResourcesList.Clear();
-
         if (BiomData == null) return;
 
-        List<byte> resourceIdsList = new();
+        List<byte> resourceIdsList = ResourcesList.Select(x => (byte)x.Data).ToList();
 
         // Get all unique resource ids
         for (int i = 0; i < BiomData.biomStruct.GridFlatSize; i++)
         {
-            byte resourceIdN = (byte)Array.IndexOf(Biom.known_resource_ids, BiomData.biomStruct.ResrcGridN[i]);
-            byte resourceIdS = (byte)Array.IndexOf(Biom.known_resource_ids, BiomData.biomStruct.ResrcGridS[i]);
+            byte resourceIdN = BiomData.biomStruct.ResrcGridN[i];
+            byte resourceIdS = BiomData.biomStruct.ResrcGridS[i];
 
             if (!resourceIdsList.Contains(resourceIdN))
             {
                 resourceIdsList.Add(resourceIdN);
-                var color = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.FromRgb(
-                    (byte)Biom.palette.paletteData[resourceIdN][0],
-                    (byte)Biom.palette.paletteData[resourceIdN][1],
-                    (byte)Biom.palette.paletteData[resourceIdN][2]
-                ), 1);
+
+                var dataColor = GetDefaultUniqueResourceColor(resourceIdN);
+                var color = System.Drawing.Color.FromArgb(
+                    255,
+                    dataColor.R,
+                    dataColor.G,
+                    dataColor.B);
 
                 ResourcesList.Add(new BiomDataList(
+                    null,
                     resourceIdN,
-                    color
+                    color,
+                    BiomDataList.DataTypes.Resource
                 ));
             }
 
             if (!resourceIdsList.Contains(resourceIdS))
             {
                 resourceIdsList.Add(resourceIdS);
-                var color = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.FromRgb(
-                    (byte)Biom.palette.paletteData[resourceIdS][0],
-                    (byte)Biom.palette.paletteData[resourceIdS][1],
-                    (byte)Biom.palette.paletteData[resourceIdS][2]
-                ), 1);
+
+                var dataColor = GetDefaultUniqueResourceColor(resourceIdS);
+                var color = System.Drawing.Color.FromArgb(
+                    255,
+                    dataColor.R,
+                    dataColor.G,
+                    dataColor.B);
 
                 ResourcesList.Add(new BiomDataList(
+                    null,
                     resourceIdS,
-                    color
+                    color,
+                    BiomDataList.DataTypes.Resource
                 ));
             }
         }

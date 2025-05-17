@@ -3,6 +3,7 @@ using System.Drawing;
 using DynamicData;
 using Mutagen.Bethesda.Starfield;
 using System.Reflection.PortableExecutable;
+using Avalonia.Media.Imaging;
 
 namespace ErisToolkit.Common.GameData;
 
@@ -13,16 +14,20 @@ namespace ErisToolkit.Common.GameData;
  * which is used to set the biome and resource per-"pixel"
  * of a planet surface.
  * 
- * The reverse engineering of the .biom file was inspuired
+ * The reverse engineering of the .biom file was inspired
  * by the repository
  * https://github.com/PixelRick/StarfieldScripts
  * 
  */
 
+
+/*
+ * Most of the functions of the Biom class
+ * are low-level, therefore require additional
+ * handling.
+ */
 public class Biom
 {
-    public static BiomPalette palette;
-
     public static int[] known_resource_ids = [8, 88, 0, 80, 1, 81, 2, 82, 3, 83, 4, 84];
     public static readonly uint[] gridSize = { 0x100, 0x100 };
     public static readonly uint gridFlatSize = gridSize[0] * gridSize[1];
@@ -140,12 +145,6 @@ public class Biom
         }
     }
 
-    public static void LoadPalette()
-    {
-        palette = new BiomPalette(Properties.Resources.palette1);
-    }
-
-    //TODO
     public void AddBiome(UInt32 biomeID)
     {
         biomStruct.NumBiomes += 1;
@@ -162,54 +161,38 @@ public class Biom
         biomStruct.BiomeIds = list.ToArray();
     }
 
-    public System.Drawing.Bitmap GetBiomeImage(uint[] grid)
+    public void ReplaceBiomeData(uint[] newData, BiomDataSide side)
     {
-        System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap((int)gridSize[0], (int)gridSize[1]);
-
-        Dictionary<int, List<int>> colors = palette.paletteData;
-
-        for (int i = 0; i < gridFlatSize; i++)
+        switch (side)
         {
-            int value = Array.IndexOf(biomStruct.BiomeIds, grid[i]);
-
-            int r = colors[value][0];
-            int g = colors[value][1];
-            int b = colors[value][2];
-
-            Color color = System.Drawing.Color.FromArgb(255, r, g, b);
-
-            int x = i % (int)gridSize[0];
-            int y = i / (int)gridSize[0];
-            bitmap.SetPixel(x, y, color);
+            case BiomDataSide.N:
+                if (newData.Length != biomStruct.BiomeGridN.Length) { throw new Exception(); }
+                biomStruct.BiomeGridN = newData;
+                break;
+            case BiomDataSide.S:
+                if (newData.Length != biomStruct.BiomeGridS.Length) { throw new Exception(); }
+                biomStruct.BiomeGridS = newData;
+                break;
+            default: return;
         }
-
-        return bitmap;
     }
 
-    public System.Drawing.Bitmap GetResourceImage(byte[] grid)
+    public void ReplaceResourceData(byte[] newData, BiomDataSide side)
     {
-        System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap((int)gridSize[0], (int)gridSize[1]);
-
-        Dictionary<int, List<int>> colors = palette.paletteData;
-
-        for (int i = 0; i < gridFlatSize; i++)
+        switch (side)
         {
-            int value = Array.IndexOf(known_resource_ids, grid[i]);
-
-            int r = colors[value][0];
-            int g = colors[value][1];
-            int b = colors[value][2];
-
-            Color color = System.Drawing.Color.FromArgb(255, r, g, b);
-
-            int x = i % (int)gridSize[0];
-            int y = i / (int)gridSize[0];
-            bitmap.SetPixel(x, y, color);
+            case BiomDataSide.N:
+                if (newData.Length != biomStruct.ResrcGridN.Length) { return; }
+                biomStruct.ResrcGridN = newData;
+                break;
+            case BiomDataSide.S:
+                if (newData.Length != biomStruct.ResrcGridS.Length) { return; }
+                biomStruct.ResrcGridS = newData;
+                break;
+            default: return;
         }
-
-        return bitmap;
     }
-
+    /*
     public bool LoadBiomeImage(System.Drawing.Bitmap bitmap, BiomDataSide side)
     {
         UInt32[] biomGrid;
@@ -298,5 +281,5 @@ public class Biom
         }
 
         return true;
-    }
+    }*/
 }

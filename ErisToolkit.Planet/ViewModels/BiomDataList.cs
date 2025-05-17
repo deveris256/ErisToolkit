@@ -1,12 +1,13 @@
 ﻿using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Mutagen.Bethesda.Starfield;
+using System.Drawing;
 
 namespace ErisToolkit.Planet.ViewModels;
 
 public partial class BiomDataList : ObservableObject
 {
-    public uint RawID { get; set; }
+    public object? RawID { get; set; }
 
     [ObservableProperty]
     private string _iD;
@@ -18,10 +19,15 @@ public partial class BiomDataList : ObservableObject
     private string _editorID;
 
     [ObservableProperty]
-    private IBrush _buttonColor;
+    private System.Drawing.Color _Color;
+
+    [ObservableProperty]
+    private IBrush _Brush;
 
     [ObservableProperty]
     private DataTypes _dataType;
+
+    public dynamic Data;
 
     public enum DataTypes
     {
@@ -30,42 +36,30 @@ public partial class BiomDataList : ObservableObject
         Resource
     }
 
-    public BiomDataList(IBiomeGetter biomeForm, Avalonia.Media.SolidColorBrush col)
+    public BiomDataList(IBiomeGetter? biomeForm, dynamic data, System.Drawing.Color col, DataTypes dataType)
     {
-        RawID = biomeForm.FormKey.ID; //TODO: Check the ID, it should be 6 in length
-        ID = $"{RawID:x6}";
+        Data = data;
 
-        EditorID = biomeForm.EditorID ?? "UNKNOWN";
-        ModName = biomeForm.FormKey.ModKey.Name;
+        if (biomeForm != null) {
+            EditorID = biomeForm.EditorID ?? "";
+            ModName = biomeForm.FormKey.ModKey.Name;
+            ID = $"{biomeForm.FormKey.ID:x6}";
+        } else
+        {
+            EditorID = "UNKNOWN";
+            ModName = "UNKNOWN";
+            if (dataType == DataTypes.Biome)
+            {
+                ID = $"{(uint)data:x6}";
+            }
+            else
+            {
+                ID = data.ToString();
+            }
+        }
 
-        ButtonColor = col;
-
-        DataType = DataTypes.Biome;
-    }
-
-    public BiomDataList(uint rawID, Avalonia.Media.SolidColorBrush col, DataTypes dataType = DataTypes.Biome)
-    {
-        RawID = rawID;
-        ID = $"{RawID:x6}";
-
-        EditorID = "UNKNOWN";
-        ModName = "UNKNOWN";
-
-        ButtonColor = col;
-
-        DataType = dataType;
-    }
-
-    // Resources
-    public BiomDataList(byte rawID, Avalonia.Media.SolidColorBrush col, DataTypes dataType = DataTypes.Resource)
-    {
-        RawID = rawID;
-        ID = $"{RawID:x6}";
-
-        EditorID = "UNKNOWN";
-        ModName = "UNKNOWN";
-
-        ButtonColor = col;
+        Color = col;
+        Brush = new Avalonia.Media.SolidColorBrush(new Avalonia.Media.Color(255, col.R, col.G, col.B));
 
         DataType = dataType;
     }

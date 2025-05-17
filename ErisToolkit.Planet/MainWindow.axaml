@@ -179,9 +179,9 @@
 																		<Button Click="CopyColor"
 																				HorizontalAlignment="Stretch"
 																				VerticalAlignment="Stretch"
-																				Background="{Binding ButtonColor, Mode=OneWay}"
+																				Background="{Binding Brush, Mode=OneWay}"
 																				HorizontalContentAlignment="Center"
-																				ToolTip.Tip="{Binding ButtonColor}">Copy</Button>
+																				ToolTip.Tip="{Binding Brush}">Copy</Button>
 																	</StackPanel>
 																</DataTemplate>
 															</DataGridTemplateColumn.CellTemplate>
@@ -229,9 +229,9 @@
 																		<Button Click="CopyColor"
 																				HorizontalAlignment="Stretch"
 																				VerticalAlignment="Stretch"
-																				Background="{Binding ButtonColor, Mode=OneWay}"
+																				Background="{Binding Brush, Mode=OneWay}"
 																				HorizontalContentAlignment="Center"
-																				ToolTip.Tip="{Binding ButtonColor}">Copy</Button>
+																				ToolTip.Tip="{Binding Brush}">Copy</Button>
 																	</StackPanel>
 																</DataTemplate>
 															</DataGridTemplateColumn.CellTemplate>
@@ -241,7 +241,7 @@
 															<DataGridTemplateColumn.CellTemplate>
 																<DataTemplate>
 																	<StackPanel>
-																		<TextBlock Text="{Binding RawID}" Padding="5"/>
+																		<TextBlock Text="{Binding ID}" Padding="5"/>
 																	</StackPanel>
 																</DataTemplate>
 															</DataGridTemplateColumn.CellTemplate>
